@@ -23,8 +23,8 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'RSpec support for testing Terraform configurations.'
   spec.description =
-    'Helpers, contexts and matchers to support using RSpec to test Terraform ' +
-      'configurations and modules.'
+    'Helpers, contexts and matchers to support using RSpec to test Terraform ' \
+    'configurations and modules.'
   spec.homepage = 'https://github.com/infrablocks/rspec_terraform'
   spec.license = 'MIT'
 
