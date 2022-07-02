@@ -1,0 +1,32 @@
+## Standard stuff:
+*.gem
+*.rbc
+/build
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+.rspec_status
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+.rakeTasks
+
+## Documentation cache and generated files:
+/.yardoc/
+/_yardoc/
+/doc/
+/rdoc/
+
+## Environment normalization:
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+
+## IDE:
+.idea
+*.ipr
+*.iws
+*.iml
