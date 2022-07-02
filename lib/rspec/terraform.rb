@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'terraform/version'
+require 'rspec/core'
+require 'ruby_terraform'
 
-module RSpec
-  module Terraform
-  end
+require_relative 'terraform/version'
+require_relative 'terraform/matchers'
+
+RSpec.configure do |config|
+  config.include(RSpec::Terraform::Matchers)
 end

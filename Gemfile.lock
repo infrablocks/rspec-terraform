@@ -21,6 +21,8 @@ GEM
     diff-lcs (1.5.0)
     docile (1.4.0)
     excon (0.92.3)
+    faker (2.21.0)
+      i18n (>= 1.8.11, < 2)
     faraday (2.3.0)
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
@@ -126,6 +128,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
+  faker
   gem-release
   rake
   rake_circle_ci
