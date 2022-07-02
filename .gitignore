@@ -1,9 +1,3 @@
-## IDE:
-.idea
-*.ipr
-*.iws
-*.iml
-
 ## Standard stuff:
 *.gem
 *.rbc
@@ -30,3 +24,9 @@
 /.bundle/
 /vendor/bundle
 /lib/bundler/man/
+
+## IDE:
+.idea
+*.ipr
+*.iws
+*.iml
