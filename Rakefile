@@ -45,7 +45,7 @@ namespace :keys do
       name_prefix: 'gpg',
       owner_name: 'InfraBlocks Maintainers',
       owner_email: 'maintainers@infrablocks.io',
-      owner_comment: 'rspec_terraform CI Key'
+      owner_comment: 'rspec-terraform CI Key'
     )
   end
 end
@@ -75,7 +75,7 @@ end
 
 RakeCircleCI.define_project_tasks(
   namespace: :circle_ci,
-  project_slug: 'github/infrablocks/rspec_terraform'
+  project_slug: 'github/infrablocks/rspec-terraform'
 ) do |t|
   circle_ci_config =
     YAML.load_file('config/secrets/circle_ci/config.yaml')
@@ -97,7 +97,7 @@ end
 
 RakeGithub.define_repository_tasks(
   namespace: :github,
-  repository: 'infrablocks/rspec_terraform'
+  repository: 'infrablocks/rspec-terraform'
 ) do |t, args|
   github_config =
     YAML.load_file('config/secrets/github/config.yaml')

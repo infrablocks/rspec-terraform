@@ -7,7 +7,7 @@ RSpec support for testing Terraform configurations.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'rspec_terraform'
+gem 'rspec-terraform'
 ```
 
 And then execute:
@@ -16,7 +16,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install rspec_terraform
+    $ gem install rspec-terraform
 
 ## Usage
 
@@ -60,7 +60,7 @@ openssl aes-256-cbc \
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at 
-https://github.com/infrablocks/rspec_terraform. This project is intended to be a 
+https://github.com/infrablocks/rspec-terraform. This project is intended to be a 
 safe, welcoming space for collaboration, and contributors are expected to 
 adhere to the [Contributor Covenant](http://contributor-covenant.org) code of 
 conduct.

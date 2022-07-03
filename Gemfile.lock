@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rspec_terraform (0.1.0.pre.0)
+    rspec-terraform (0.1.0.pre.2)
       rspec (>= 3.0)
       ruby-terraform (= 1.7.0.pre.1)
 
@@ -135,7 +135,7 @@ DEPENDENCIES
   rake_github
   rake_gpg
   rake_ssh
-  rspec_terraform!
+  rspec-terraform!
   rubocop
   rubocop-rake
   rubocop-rspec

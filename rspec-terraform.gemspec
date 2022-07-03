@@ -8,7 +8,7 @@ files = %w[
   bin
   lib
   CODE_OF_CONDUCT.md
-  rspec_terraform.gemspec
+  rspec-terraform.gemspec
   Gemfile
   LICENSE.txt
   Rakefile
@@ -16,7 +16,7 @@ files = %w[
 ]
 
 Gem::Specification.new do |spec|
-  spec.name = 'rspec_terraform'
+  spec.name = 'rspec-terraform'
   spec.version = RSpec::Terraform::VERSION
   spec.authors = ['InfraBlocks Maintainers']
   spec.email = ['maintainers@infrablocks.io']
@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.description =
     'Helpers, contexts and matchers to support using RSpec to test Terraform ' \
     'configurations and modules.'
-  spec.homepage = 'https://github.com/infrablocks/rspec_terraform'
+  spec.homepage = 'https://github.com/infrablocks/rspec-terraform'
   spec.license = 'MIT'
 
   spec.files = `git ls-files -z`.split("\x0").select do |f|
