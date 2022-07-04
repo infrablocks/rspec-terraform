@@ -97,7 +97,7 @@ GEM
       parser (>= 3.1.1.0)
     rubocop-rake (0.6.0)
       rubocop (~> 1.0)
-    rubocop-rspec (2.12.0)
+    rubocop-rspec (2.12.1)
       rubocop (~> 1.31)
     ruby-progressbar (1.11.0)
     ruby-terraform (1.7.0.pre.1)
