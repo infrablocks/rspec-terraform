@@ -1,17 +1,44 @@
 # frozen_string_literal: true
 
+require 'rspec/matchers/built_in/count_expectation'
+
 module RSpec
   module Terraform
     module Matchers
       class IncludeResourceChange
+        include RSpec::Matchers::BuiltIn::CountExpectation
+
         attr_reader :definition
 
         def initialize(definition = {})
           @definition = definition
+          @attributes = []
         end
 
         def matches?(plan)
-          !plan.resource_changes_matching(definition).empty?
+          matches = plan.resource_changes_matching(definition)
+          matches = matches.filter do |resource_change|
+            change = resource_change.change
+            after = change.after_object
+            @attributes.all? do |attribute|
+              expected = RubyTerraform::Models::Objects.box(attribute[:value])
+              actual = after[attribute[:name]]
+              actual == expected
+            end
+          end
+
+          match_count = matches.count
+          if has_expected_count?
+            expected_count_matches?(match_count)
+          else
+            match_count.positive?
+          end
+        end
+
+        def with_attribute_value(*args)
+          stage, name, value = args.count == 3 ? args : [:after, *args]
+          @attributes << { stage: stage, name: name, value: value }
+          self
         end
       end
     end
