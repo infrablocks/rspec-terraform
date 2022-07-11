@@ -16,16 +16,7 @@ module RSpec
         end
 
         def matches?(plan)
-          matches = plan.resource_changes_matching(definition)
-          matches = matches.filter do |resource_change|
-            change = resource_change.change
-            after = change.after_object
-            @attributes.all? do |attribute|
-              expected = RubyTerraform::Models::Objects.box(attribute[:value])
-              actual = after[attribute[:name]]
-              actual == expected
-            end
-          end
+          matches = attribute_matches(plan)
 
           match_count = matches.count
           if has_expected_count?
@@ -39,6 +30,24 @@ module RSpec
           stage, name, value = args.count == 3 ? args : [:after, *args]
           @attributes << { stage: stage, name: name, value: value }
           self
+        end
+
+        private
+
+        def definition_matches(plan)
+          plan.resource_changes_matching(definition)
+        end
+
+        def attribute_matches(plan)
+          definition_matches(plan).filter do |resource_change|
+            change = resource_change.change
+            after = change.after_object
+            @attributes.all? do |attribute|
+              expected = RubyTerraform::Models::Objects.box(attribute[:value])
+              actual = after[attribute[:name]]
+              actual == expected
+            end
+          end
         end
       end
     end

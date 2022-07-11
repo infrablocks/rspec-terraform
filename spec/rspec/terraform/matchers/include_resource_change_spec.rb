@@ -287,8 +287,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .once
+                  .new(type: 'some_resource_type')
+                  .once
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -310,8 +310,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .once
+                  .new(type: 'some_resource_type')
+                  .once
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -333,8 +333,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .once
+                  .new(type: 'some_resource_type')
+                  .once
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -362,8 +362,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .twice
+                  .new(type: 'some_resource_type')
+                  .twice
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -385,8 +385,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .twice
+                  .new(type: 'some_resource_type')
+                  .twice
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -408,8 +408,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .twice
+                  .new(type: 'some_resource_type')
+                  .twice
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -435,8 +435,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .twice
+                  .new(type: 'some_resource_type')
+                  .twice
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -468,8 +468,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .thrice
+                  .new(type: 'some_resource_type')
+                  .thrice
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -491,8 +491,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .thrice
+                  .new(type: 'some_resource_type')
+                  .thrice
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -518,8 +518,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .thrice
+                  .new(type: 'some_resource_type')
+                  .thrice
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -549,8 +549,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .thrice
+                  .new(type: 'some_resource_type')
+                  .thrice
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -586,9 +586,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .exactly(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .exactly(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -610,9 +610,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .exactly(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .exactly(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -639,9 +639,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .exactly(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .exactly(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -676,9 +676,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .exactly(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .exactly(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -714,9 +714,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_most(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_most(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -738,9 +738,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_most(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_most(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -767,9 +767,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_most(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_most(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -804,9 +804,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_most(4)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_most(4)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -834,9 +834,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_least(2)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_least(2)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -858,9 +858,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_least(2)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_least(2)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -883,9 +883,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_least(2)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_least(2)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(false))
       end
@@ -912,9 +912,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
         )
 
         matcher = described_class
-          .new(type: 'some_resource_type')
-          .at_least(2)
-          .times
+                  .new(type: 'some_resource_type')
+                  .at_least(2)
+                  .times
 
         expect(matcher.matches?(plan)).to(be(true))
       end
@@ -948,8 +948,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(:some_attribute, 'some-value')
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(:some_attribute, 'some-value')
 
           expect(matcher.matches?(plan)).to(be(true))
         end
@@ -978,11 +978,11 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(
-              :some_attribute,
-              %w[some-value-1 some-value-2]
-            )
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      :some_attribute,
+                      %w[some-value-1 some-value-2]
+                    )
 
           expect(matcher.matches?(plan)).to(be(true))
         end
@@ -1011,11 +1011,11 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(
-              :some_attribute,
-              { first: 1, second: 2 }
-            )
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      :some_attribute,
+                      { first: 1, second: 2 }
+                    )
 
           expect(matcher.matches?(plan)).to(be(true))
         end
@@ -1047,14 +1047,14 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(
-              :some_attribute,
-              {
-                first: [{ a: 1, b: 2 }],
-                second: [3, 4, 5]
-              }
-            )
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      :some_attribute,
+                      {
+                        first: [{ a: 1, b: 2 }],
+                        second: [3, 4, 5]
+                      }
+                    )
 
           expect(matcher.matches?(plan)).to(be(true))
         end
@@ -1083,8 +1083,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(:some_attribute, 'some-value')
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(:some_attribute, 'some-value')
 
           expect(matcher.matches?(plan)).to(be(false))
         end
@@ -1113,8 +1113,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(:some_attribute, %w[value-2 value-3])
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(:some_attribute, %w[value-2 value-3])
 
           expect(matcher.matches?(plan)).to(be(false))
         end
@@ -1143,9 +1143,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(:some_attribute,
-                                  { second: 2, third: 3 })
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(:some_attribute,
+                                          { second: 2, third: 3 })
 
           expect(matcher.matches?(plan)).to(be(false))
         end
@@ -1177,12 +1177,12 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(:some_attribute,
-                                  {
-                                    first: [{ a: 1, c: 3 }],
-                                    second: [3, 4, 5]
-                                  })
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(:some_attribute,
+                                          {
+                                            first: [{ a: 1, c: 3 }],
+                                            second: [3, 4, 5]
+                                          })
 
           expect(matcher.matches?(plan)).to(be(false))
         end
@@ -1210,8 +1210,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           )
 
           matcher = described_class
-            .new(type: 'some_resource_type')
-            .with_attribute_value(:some_attribute, 'some-value')
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(:some_attribute, 'some-value')
 
           expect(matcher.matches?(plan)).to(be(false))
         end
