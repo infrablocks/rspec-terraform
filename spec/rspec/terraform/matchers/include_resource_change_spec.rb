@@ -923,7 +923,7 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
 
   describe 'attributes' do
     describe '#with_attribute_value' do
-      context 'when before/after not specified' do
+      context 'when before/after not specified and attribute is symbol' do
         it 'matches when resource change has after attribute with specified ' \
            'scalar value' do
           plan = RubyTerraform::Models::Plan.new(
@@ -1212,6 +1212,372 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           matcher = described_class
                     .new(type: 'some_resource_type')
                     .with_attribute_value(:some_attribute, 'some-value')
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+      end
+
+      context 'when before/after not specified and attribute is path' do
+        it 'matches when resource change has after attribute at path ' \
+           'with specified scalar value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: 'some-value'
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key], 'some-value'
+                    )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when resource change has after attribute at path ' \
+           'with specified list value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: %w[some-value-1 some-value-2]
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      %w[some-value-1 some-value-2]
+                    )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when resource change has after attribute at path ' \
+           'with specified map value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: {
+                            first: 1,
+                            second: 2
+                          }
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      { first: 1, second: 2 }
+                    )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when resource change has after attribute at path ' \
+           'with specified complex nested value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: {
+                            first: [{ a: 1, b: 2 }],
+                            second: [3, 4, 5]
+                          }
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      {
+                        first: [{ a: 1, b: 2 }],
+                        second: [3, 4, 5]
+                      }
+                    )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when resource change has after attribute at path with ' \
+           'different scalar value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: 'other-value'
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      'some-value'
+                    )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change has after attribute at path with ' \
+           'different list value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: %w[value-1 value-2]
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      %w[value-2 value-3]
+                    )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change has after attribute at path with ' \
+           'different map value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: { first: 1, second: 2 }
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      { second: 2, third: 3 }
+                    )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change has after attribute at path with ' \
+           'different complex nested value' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          some_key: {
+                            first: [{ a: 1, b: 2 }],
+                            second: [3, 4, 5]
+                          }
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      {
+                        first: [{ a: 1, c: 3 }],
+                        second: [3, 4, 5]
+                      }
+                    )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change does not have after attribute ' \
+           'for start of path' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        other_attribute: {
+                          some_key: 'some-value'
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      'some-value'
+                    )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change does not have after attribute ' \
+           'at end of path' do
+          plan = RubyTerraform::Models::Plan.new(
+            Support::Build.plan_content(
+              resource_changes: [
+                Support::Build.resource_change_content(
+                  type: 'some_resource_type',
+                  change: Support::Build.create_change_content(
+                    {
+                      after: {
+                        some_attribute: {
+                          other_key: 'some-value'
+                        }
+                      }
+                    }
+                  )
+                ),
+                Support::Build.resource_change_content(
+                  type: 'other_resource_type',
+                  change: Support::Build.delete_change_content
+                )
+              ]
+            )
+          )
+
+          matcher = described_class
+                    .new(type: 'some_resource_type')
+                    .with_attribute_value(
+                      %i[some_attribute some_key],
+                      'some-value'
+                    )
 
           expect(matcher.matches?(plan)).to(be(false))
         end

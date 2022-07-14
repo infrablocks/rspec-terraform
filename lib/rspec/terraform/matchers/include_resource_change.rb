@@ -27,8 +27,9 @@ module RSpec
         end
 
         def with_attribute_value(*args)
-          stage, name, value = args.count == 3 ? args : [:after, *args]
-          @attributes << { stage: stage, name: name, value: value }
+          stage, path, value = args.count == 3 ? args : [:after, *args]
+          path = [path] if path.is_a?(Symbol)
+          @attributes << { stage: stage, path: path, value: value }
           self
         end
 
@@ -44,7 +45,7 @@ module RSpec
             after = change.after_object
             @attributes.all? do |attribute|
               expected = RubyTerraform::Models::Objects.box(attribute[:value])
-              actual = after[attribute[:name]]
+              actual = after.dig(*attribute[:path])
               actual == expected
             end
           end
