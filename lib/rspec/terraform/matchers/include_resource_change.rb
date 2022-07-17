@@ -66,7 +66,7 @@ module RSpec
         def attribute_value(object, attribute)
           expected = attribute[:value]
           actual = object.dig(*attribute[:path])
-          return actual&.value if expected.respond_to?(:matches?)
+          return actual&.unbox if expected.respond_to?(:matches?)
 
           actual
         end

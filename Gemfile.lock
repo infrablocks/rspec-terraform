@@ -3,12 +3,12 @@ PATH
   specs:
     rspec-terraform (0.1.0.pre.6)
       rspec (>= 3.0)
-      ruby-terraform (= 1.7.0.pre.3)
+      ruby-terraform (= 1.7.0.pre.5)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (7.0.3)
+    activesupport (7.0.3.1)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
@@ -30,7 +30,7 @@ GEM
     gem-release (2.2.2)
     hamster (3.0.0)
       concurrent-ruby (~> 1.0)
-    i18n (1.10.0)
+    i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     immutable-struct (2.4.1)
     json (2.6.2)
@@ -93,14 +93,14 @@ GEM
       rubocop-ast (>= 1.18.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.18.0)
+    rubocop-ast (1.19.1)
       parser (>= 3.1.1.0)
     rubocop-rake (0.6.0)
       rubocop (~> 1.0)
     rubocop-rspec (2.12.1)
       rubocop (~> 1.31)
     ruby-progressbar (1.11.0)
-    ruby-terraform (1.7.0.pre.3)
+    ruby-terraform (1.7.0.pre.5)
       immutable-struct (~> 2.4)
       lino (~> 3.0)
     ruby2_keywords (0.0.5)

@@ -1197,6 +1197,87 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           expect(matcher.matches?(plan)).to(be(true))
         end
 
+        it 'matches when resource change has after attribute ' \
+           'with list value satisfying specified matcher' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .with_resource_creation(
+                     type: 'some_resource_type',
+                     change: {
+                       after: {
+                         some_attribute: [1, 2, 3]
+                       }
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .with_attribute_value(:some_attribute, including(2))
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when resource change has after attribute ' \
+           'with map value satisfying specified matcher' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .with_resource_creation(
+                     type: 'some_resource_type',
+                     change: {
+                       after: {
+                         some_attribute: {
+                           first: 1,
+                           second: 2
+                         }
+                       }
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .with_attribute_value(
+                        :some_attribute, including(first: 1)
+                      )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when resource change has after attribute ' \
+           'with complex nested value satisfying specified matcher' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .with_resource_creation(
+                     type: 'some_resource_type',
+                     change: {
+                       after: {
+                         some_attribute: {
+                           some_key: [
+                             {
+                               first: 1,
+                               second: 2
+                             }
+                           ]
+                         }
+                       }
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .with_attribute_value(
+                        :some_attribute,
+                        including(some_key: [{ first: 1, second: 2 }])
+                      )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
         it 'mismatches when resource change has after attribute' \
            'with scalar value that does not satisfy specified matcher' do
           plan = Support::Builders
@@ -1215,6 +1296,88 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           matcher = described_class
                       .new(type: 'some_resource_type')
                       .with_attribute_value(:some_attribute, including('other'))
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change has after attribute ' \
+           'with list value that does not satisfy specified matcher' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .with_resource_creation(
+                     type: 'some_resource_type',
+                     change: {
+                       after: {
+                         some_attribute: [4, 5, 6]
+                       }
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .with_attribute_value(:some_attribute, including(2))
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change has after attribute ' \
+           'with map value that does not satisfy specified matcher' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .with_resource_creation(
+                     type: 'some_resource_type',
+                     change: {
+                       after: {
+                         some_attribute: {
+                           third: 3,
+                           fourth: 4
+                         }
+                       }
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .with_attribute_value(
+                        :some_attribute, including(first: 1)
+                      )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when resource change has after attribute ' \
+           'with complex nested value that does not satisfy ' \
+           'specified matcher' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .with_resource_creation(
+                     type: 'some_resource_type',
+                     change: {
+                       after: {
+                         some_attribute: {
+                           some_key: [
+                             {
+                               third: 3,
+                               fourth: 4
+                             }
+                           ]
+                         }
+                       }
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .with_attribute_value(
+                        :some_attribute,
+                        including(some_key: [{ first: 1, second: 2 }])
+                      )
 
           expect(matcher.matches?(plan)).to(be(false))
         end
