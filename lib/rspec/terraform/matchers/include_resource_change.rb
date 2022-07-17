@@ -11,7 +11,7 @@ module RSpec
       class IncludeResourceChange
         include RSpec::Matchers::BuiltIn::CountExpectation
 
-        attr_reader :definition
+        attr_reader :definition, :plan
 
         def initialize(definition = {})
           @definition = definition
@@ -19,6 +19,7 @@ module RSpec
         end
 
         def matches?(plan)
+          @plan = plan
           matches = attribute_matches(plan)
 
           match_count = matches.count
@@ -34,6 +35,16 @@ module RSpec
           path = [path] if path.is_a?(Symbol)
           @attributes << { stage: stage, path: path, value: value }
           self
+        end
+
+        def failure_message
+          "\nexpected: #{positive_expected_line}" \
+            "\n     got: #{positive_got_line}"
+        end
+
+        def failure_message_when_negated
+          "\nexpected: a plan including no resource changes" \
+            "\n     got: a plan including at least one resource change"
         end
 
         private
@@ -70,55 +81,42 @@ module RSpec
 
           actual
         end
+
+        def positive_expected_line
+          cardinality = 'at least one'
+          expected_line = "a plan including #{cardinality} resource change"
+
+          unless @definition.empty?
+            expected_line =
+              "#{expected_line} matching definition:\n#{definition_lines}"
+          end
+
+          expected_line
+        end
+
+        def positive_got_line
+          if plan.resource_changes.empty?
+            return 'a plan including no resource changes'
+          end
+
+          "a plan with resource changes:\n#{resource_change_lines}"
+        end
+
+        def definition_lines
+          definition
+            .collect { |k, v| "            #{k}: #{v}" }
+            .join("\n")
+        end
+
+        def resource_change_lines
+          plan.resource_changes
+            .collect do |rc|
+              actions = rc.change.actions.join(', ')
+              "            - #{rc.address} (#{actions})"
+            end
+            .join("\n")
+        end
       end
     end
   end
 end
-
-# RSpec::Matchers.define :include_resource_creation do |type|
-#   match do |plan|
-#     resource_changes = plan.resource_changes_with_type(type)
-#     resource_creations = resource_changes.filter(&:create?)
-#
-#     return false if @count && resource_creations.length != @count
-#     return false if resource_creations.empty?
-#
-#     pp plan.to_h
-#
-#     if @arguments
-#       return resource_creations.any? do |resource_creation|
-#         @arguments.all? do |name, value|
-#           resource_creation.change.after[name] == value
-#         end
-#       end
-#     end
-#
-#     return true
-#   end
-#
-#   chain :count do |count|
-#     @count = count
-#   end
-#
-#   chain :with_argument_value do |name, value|
-#     @arguments = (@arguments || {}).merge(name => value)
-#   end
-#
-#   failure_message do |plan|
-#     resource_creations = plan.resource_creations.map do |resource_creation|
-#       "#{resource_creation.type}.#{resource_creation.name}"
-#     end
-#     "\nexpected: a plan with a resource creation for type: #{type}" \
-#       "\n     got: a plan with resource creations:" \
-#       "\n            - #{resource_creations.join("\n            - ")}"
-#   end
-#
-#   failure_message_when_negated do |plan|
-#     resource_creations = plan.resource_creations.map do |resource_creation|
-#       "#{resource_creation.type}.#{resource_creation.name}"
-#     end
-#     "\nexpected: a plan without a resource creation for type: #{type}" \
-#       "\n     got: a plan with resource creations:" \
-#       "\n            - #{resource_creations.join("\n            - ")}"
-#   end
-# end

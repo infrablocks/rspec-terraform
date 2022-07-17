@@ -73,34 +73,19 @@ module Support
           multi_instance_resource: false
         }.merge(opts)
 
-        resource_provider_name = Support::Random.provider_name
-        resource_type = Support::Random.resource_type
-        resource_name = Support::Random.resource_name
-        resource_index = Support::Random.resource_index
-        resource_module_address = Support::Random.module_address
-        resource_address =
-          if opts[:module_resource]
-            "#{resource_module_address}.#{resource_type}.#{resource_name}"
-          else
-            "#{resource_type}.#{resource_name}"
-          end
-
         defaults = {
-          address: resource_address,
+          module_address: resolved_resource_module_address(overrides, opts),
           mode: 'managed',
-          type: resource_type,
-          name: resource_name,
-          provider_name: resource_provider_name,
+          type: resolved_resource_type(overrides),
+          name: resolved_resource_name(overrides),
+          index: resolved_resource_index(overrides, opts),
+          provider_name: resolved_resource_provider_name(overrides),
           change: change_content
         }
 
-        if opts[:module_resource]
-          defaults = defaults.merge(module_address: resource_module_address)
-        end
-
-        if opts[:multi_instance_resource]
-          defaults = defaults.merge(index: resource_index)
-        end
+        defaults = defaults.merge(
+          address: resolved_resource_address(overrides, defaults, opts)
+        )
 
         defaults.merge(overrides)
       end
@@ -130,6 +115,52 @@ module Support
       end
 
       # rubocop:enable Metrics/MethodLength
+
+      private
+
+      def resolved_resource_provider_name(overrides)
+        overrides[:provider_name] || Support::Random.provider_name
+      end
+
+      def resolved_resource_type(overrides)
+        overrides[:type] || Support::Random.resource_type
+      end
+
+      def resolved_resource_name(overrides)
+        overrides[:name] || Support::Random.resource_name
+      end
+
+      def resolved_resource_index(overrides, opts)
+        return overrides[:index] if overrides[:index]
+        return nil unless opts[:multi_instance_resource]
+
+        Support::Random.resource_index
+      end
+
+      def resolved_resource_module_address(overrides, opts)
+        return overrides[:module_address] if overrides[:module_address]
+        return nil unless opts[:module_resource]
+
+        Support::Random.module_address
+      end
+
+      def resolved_resource_address(overrides, defaults, opts)
+        return overrides[:address] if overrides[:address]
+
+        if opts[:module_resource]
+          module_resource_address(defaults)
+        else
+          standard_resource_address(defaults)
+        end
+      end
+
+      def module_resource_address(values)
+        "#{values[:module_address]}.#{values[:type]}.#{values[:name]}"
+      end
+
+      def standard_resource_address(values)
+        "#{values[:type]}.#{values[:name]}"
+      end
     end
   end
   # rubocop:enable Metrics/ModuleLength

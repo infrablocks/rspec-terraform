@@ -3,79 +3,171 @@
 require 'spec_helper'
 
 # rubocop:disable RSpec/NestedGroups
+# rubocop:disable Layout/LineContinuationLeadingSpace
 describe RSpec::Terraform::Matchers::IncludeResourceChange do
   describe 'definitions' do
     describe 'without definition' do
-      it 'matches when plan includes a single resource change' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_deletion
-                 .build
+      describe '#matches?' do
+        it 'matches when plan includes a single resource change' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion
+                   .build
 
-        matcher = described_class.new
+          matcher = described_class.new
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when plan includes many resource changes' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation
+                   .with_resource_deletion
+                   .build
+
+          matcher = described_class.new
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when plan does not include any resource changes' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
+
+          matcher = described_class.new
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'matches when plan includes many resource changes' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation
-                 .with_resource_deletion
-                 .build
+      describe '#failure_message' do
+        it 'indicates that resource changes were expected but ' \
+           'there were none' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
 
-        matcher = described_class.new
+          matcher = described_class.new
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.failure_message)
+            .to(
+              include('expected: a plan including at least one resource change')
+                .and(include('got: a plan including no resource changes'))
+            )
+        end
       end
 
-      it 'mismatches when plan does not include any resource changes' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_no_resource_changes
-                 .build
+      describe '#failure_message_when_negated' do
+        it 'indicates that resource changes were expected but ' \
+           'there were none' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation
+                   .with_resource_deletion
+                   .build
 
-        matcher = described_class.new
+          matcher = described_class.new
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message_when_negated)
+            .to(
+              include('expected: a plan including no resource changes')
+                .and(include('got: a plan including at least one resource ' \
+                             'change'))
+            )
+        end
       end
     end
 
     describe 'with type defined' do
-      it 'matches when plan includes a single resource change with type' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#matches?' do
+        it 'matches when plan includes a single resource change with type' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class.new(type: 'some_resource_type')
+          matcher = described_class.new(type: 'some_resource_type')
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when plan includes many resource changes with type' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class.new(type: 'some_resource_type')
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when plan does not include a resource change with ' \
+           'type' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type1')
+                   .with_resource_creation(type: 'other_resource_type2')
+                   .build
+
+          matcher = described_class.new(type: 'some_resource_type')
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'matches when plan includes many resource changes with type' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_update(type: 'some_resource_type')
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected resource change definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class.new(type: 'some_resource_type')
+          matcher = described_class.new(type: 'some_resource_type')
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(true))
-      end
+          expect(matcher.failure_message)
+            .to(
+              include('expected: a plan including at least one ' \
+                      "resource change matching definition:\n" \
+                      '            type: some_resource_type')
+            )
+        end
 
-      it 'mismatches when plan does not include a resource change with type' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'other_resource_type1')
-                 .with_resource_creation(type: 'other_resource_type2')
-                 .build
+        it 'includes details of the available resource changes when present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
 
-        matcher = described_class.new(type: 'some_resource_type')
+          matcher = described_class.new(type: 'some_resource_type')
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "got: a plan with resource changes:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
 
@@ -1385,4 +1477,5 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
     end
   end
 end
+# rubocop:enable Layout/LineContinuationLeadingSpace
 # rubocop:enable RSpec/NestedGroups
