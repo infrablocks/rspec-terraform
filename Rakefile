@@ -84,7 +84,7 @@ RakeCircleCI.define_project_tasks(
   t.environment_variables = {
     ENCRYPTION_PASSPHRASE:
         File.read('config/secrets/ci/encryption.passphrase')
-            .chomp
+          .chomp
   }
   t.checkout_keys = []
   t.ssh_keys = [

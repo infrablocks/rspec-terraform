@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'rspec/core'
+require 'rspec/matchers'
+require 'rspec/matchers/built_in/eq'
 require 'rspec/matchers/built_in/count_expectation'
 
 module RSpec
@@ -44,11 +47,28 @@ module RSpec
             change = resource_change.change
             after = change.after_object
             @attributes.all? do |attribute|
-              expected = RubyTerraform::Models::Objects.box(attribute[:value])
-              actual = after.dig(*attribute[:path])
-              actual == expected
+              matcher = attribute_matcher(attribute)
+              value = attribute_value(after, attribute)
+              matcher.matches?(value)
             end
           end
+        end
+
+        def attribute_matcher(attribute)
+          expected = attribute[:value]
+          return expected if expected.respond_to?(:matches?)
+
+          RSpec::Matchers::BuiltIn::Eq.new(
+            RubyTerraform::Models::Objects.box(expected)
+          )
+        end
+
+        def attribute_value(object, attribute)
+          expected = attribute[:value]
+          actual = object.dig(*attribute[:path])
+          return actual&.value if expected.respond_to?(:matches?)
+
+          actual
         end
       end
     end

@@ -3,6 +3,7 @@
 require_relative './random'
 
 module Support
+  # rubocop:disable Metrics/ModuleLength
   module Build
     class << self
       def no_op_change_content(overrides = {})
@@ -29,6 +30,14 @@ module Support
         change_content(overrides.merge(actions: %w[create delete]))
       end
 
+      def replace_change_content(overrides = {})
+        change_content(
+          overrides.merge(
+            actions: [%w[create delete], %w[delete create]].sample
+          )
+        )
+      end
+
       def delete_change_content(overrides = {})
         change_content(overrides.merge(actions: ['delete']))
       end
@@ -51,6 +60,7 @@ module Support
           }
         }.merge(overrides)
       end
+
       # rubocop:enable Metrics/MethodLength
 
       # rubocop:disable Metrics/MethodLength
@@ -94,6 +104,7 @@ module Support
 
         defaults.merge(overrides)
       end
+
       # rubocop:enable Metrics/MethodLength
 
       def variable_content(overrides = {})
@@ -117,7 +128,9 @@ module Support
           ]
         }.merge(overrides)
       end
+
       # rubocop:enable Metrics/MethodLength
     end
   end
+  # rubocop:enable Metrics/ModuleLength
 end
