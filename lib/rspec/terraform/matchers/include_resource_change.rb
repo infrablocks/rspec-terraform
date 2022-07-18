@@ -111,8 +111,9 @@ module RSpec
         def resource_change_lines
           plan.resource_changes
             .collect do |rc|
+              address = rc.address
               actions = rc.change.actions.join(', ')
-              "            - #{rc.address} (#{actions})"
+              "            - #{address} (#{actions})"
             end
             .join("\n")
         end
