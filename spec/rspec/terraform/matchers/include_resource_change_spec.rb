@@ -63,8 +63,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
       end
 
       describe '#failure_message_when_negated' do
-        it 'indicates that resource changes were expected but ' \
-           'there were none' do
+        it 'indicates that resource changes were not expected but ' \
+           'there were some' do
           plan = Support::Builders
                    .plan_builder
                    .with_resource_creation
@@ -143,7 +143,42 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
             )
         end
 
-        it 'includes details of the available resource changes when present' do
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
+
+          matcher = described_class.new(type: 'some_resource_type')
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
+
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class.new(type: 'some_resource_type')
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
           plan = Support::Builders
                    .plan_builder
                    .with_resource_creation(
@@ -162,7 +197,7 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           expect(matcher.failure_message)
             .to(
               include(
-                "got: a plan with resource changes:\n" \
+                "available resource changes are:\n" \
                 "            - other_resource_type.first (create)\n" \
                 '            - other_resource_type.second (update)'
               )
@@ -172,479 +207,1385 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
     end
 
     describe 'with type and name defined' do
-      it 'matches when plan includes a single resource change with ' \
-         'type and name' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type',
-                                         name: 'some_instance')
-                 .with_resource_update(type: 'some_resource_type',
-                                       name: 'other_instance')
-                 .build
-
-        matcher = described_class.new(
-          type: 'some_resource_type',
-          name: 'some_instance'
-        )
-
-        expect(matcher.matches?(plan)).to(be(true))
-      end
-
-      it 'matches when plan includes many resource changes with ' \
-         'type and name' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type',
-                                         name: 'some_instance')
-                 .with_resource_update(type: 'some_resource_type',
-                                       name: 'some_instance')
-                 .build
-
-        matcher = described_class.new(
-          type: 'some_resource_type',
-          name: 'some_instance'
-        )
-
-        expect(matcher.matches?(plan)).to(be(true))
-      end
-
-      it 'mismatches when plan does not include a resource change with ' \
-         'type and name' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type',
+      describe '#matches?' do
+        it 'matches when plan includes a single resource change with ' \
+           'type and name' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type',
+                                           name: 'some_instance')
+                   .with_resource_update(type: 'some_resource_type',
                                          name: 'other_instance')
-                 .with_resource_deletion(type: 'other_resource_type',
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_instance'
+          )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when plan includes many resource changes with ' \
+           'type and name' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type',
+                                           name: 'some_instance')
+                   .with_resource_update(type: 'some_resource_type',
                                          name: 'some_instance')
-                 .build
+                   .build
 
-        matcher = described_class.new(
-          type: 'some_resource_type',
-          name: 'some_instance'
-        )
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_instance'
+          )
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when plan does not include a resource change with ' \
+           'type and name' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type',
+                                           name: 'other_instance')
+                   .with_resource_deletion(type: 'other_resource_type',
+                                           name: 'some_instance')
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_instance'
+          )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+      end
+
+      describe '#failure_message' do
+        it 'includes the expected resource change definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name'
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include('expected: a plan including at least one ' \
+                      "resource change matching definition:\n" \
+                      "            type: some_resource_type\n" \
+                      "            name: some_resource_name\n")
+            )
+        end
+
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name'
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
+
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name'
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name'
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
 
     describe 'with type, name and index defined' do
-      it 'matches when plan includes a single resource change with ' \
-         'type, name and index' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type',
-                                         name: 'some_instance',
-                                         index: 0)
-                 .with_resource_creation(type: 'some_resource_type',
-                                         name: 'some_instance',
-                                         index: 1)
-                 .build
+      describe '#matches?' do
+        it 'matches when plan includes a single resource change with ' \
+           'type, name and index' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type',
+                                           name: 'some_instance',
+                                           index: 0)
+                   .with_resource_creation(type: 'some_resource_type',
+                                           name: 'some_instance',
+                                           index: 1)
+                   .build
 
-        matcher = described_class.new(
-          type: 'some_resource_type',
-          name: 'some_instance',
-          index: 0
-        )
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_instance',
+            index: 0
+          )
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when plan does not include a resource change with ' \
+           'type, name and index' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type',
+                                           name: 'some_instance',
+                                           index: 0)
+                   .with_resource_creation(type: 'some_resource_type',
+                                           name: 'some_instance',
+                                           index: 1)
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_instance',
+            index: 3
+          )
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'mismatches when plan does not include a resource change with ' \
-         'type, name and index' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type',
-                                         name: 'some_instance',
-                                         index: 0)
-                 .with_resource_creation(type: 'some_resource_type',
-                                         name: 'some_instance',
-                                         index: 1)
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected resource change definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first',
+                     index: 0
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second',
+                     index: 0
+                   )
+                   .build
 
-        matcher = described_class.new(
-          type: 'some_resource_type',
-          name: 'some_instance',
-          index: 3
-        )
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name',
+            index: 1
+          )
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message)
+            .to(
+              include('expected: a plan including at least one ' \
+                      "resource change matching definition:\n" \
+                      "            type: some_resource_type\n" \
+                      "            name: some_resource_name\n" \
+                      "            index: 1\n")
+            )
+        end
+
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name',
+            index: 0
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
+
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first',
+                     index: 0
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second',
+                     index: 0
+                   )
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name',
+            index: 1
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first',
+                     index: 0
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second',
+                     index: 0
+                   )
+                   .build
+
+          matcher = described_class.new(
+            type: 'some_resource_type',
+            name: 'some_resource_name',
+            index: 1
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first[0] (create)\n" \
+                '            - other_resource_type.second[0] (update)'
+              )
+            )
+        end
       end
     end
   end
 
   describe 'cardinality' do
     describe '#once' do
-      it 'matches when a single resource change meets definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#matches?' do
+        it 'matches when a single resource change meets definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .once
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when no resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when multiple resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'mismatches when no resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'other_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected cardinality of "exactly one"' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .once
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(
+              include('expected: a plan including exactly one resource change')
+            )
+        end
 
-      it 'mismatches when multiple resource change meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .build
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .once
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
+
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'indicates there are multiple matching resource changes when more ' \
+           'than one is present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including two matching resource changes'))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .once
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
 
     describe '#twice' do
-      it 'matches when two resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#matches?' do
+        it 'matches when two resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .twice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when no resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when one resource change meets definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when more than two resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'mismatches when no resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'other_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected cardinality of "exactly two"' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .twice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(
+              include('expected: a plan including exactly two resource changes')
+            )
+        end
 
-      it 'mismatches when one resource change meets definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .twice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
 
-      it 'mismatches when more than two resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .build
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .twice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'indicates there is only one matching resource change when one ' \
+           'is present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including one matching resource change'))
+        end
+
+        it 'indicates there are multiple matching resource changes when more ' \
+           'than two are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include(
+                  'got: a plan including three matching resource changes'
+                ))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .twice
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
 
     describe '#thrice' do
-      it 'matches when three resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#matches?' do
+        it 'matches when three resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .thrice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when no resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when less than three resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when more than three resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'mismatches when no resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'other_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected cardinality of "exactly three"' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .thrice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(include(
+                  'expected: a plan including exactly three resource changes'
+                ))
+        end
 
-      it 'mismatches when less than three resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .thrice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
 
-      it 'mismatches when more than three resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .build
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .thrice
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'indicates there is only one matching resource change when one ' \
+           'is present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including one matching resource change'))
+        end
+
+        it 'indicates there are only two matching resource change when two ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including two matching resource changes'))
+        end
+
+        it 'indicates there are multiple matching resource changes when more ' \
+           'than three are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include(
+                  'got: a plan including 4 matching resource changes'
+                ))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .thrice
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
 
     describe '#exactly' do
-      it 'matches when specified number of resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#matches?' do
+        it 'matches when specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .exactly(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4)
+                      .times
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when no resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when less than specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when more than specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'mismatches when no resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'other_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected cardinality of "exactly <n>"' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .exactly(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(include(
+                  'expected: a plan including exactly 4 resource changes'
+                ))
+        end
 
-      it 'mismatches when less than specified number of resource changes ' \
-         'meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .exactly(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
 
-      it 'mismatches when more than specified number of resource changes ' \
-         'meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .build
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .exactly(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'indicates there is too few matching resource changes when less ' \
+           'than required are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4).times
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including one matching resource change'))
+        end
+
+        it 'indicates there are too many matching resource changes when more ' \
+           'than required are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4).times
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include(
+                  'got: a plan including 5 matching resource changes'
+                ))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .exactly(4).times
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
 
     describe '#at_most' do
-      it 'matches when specified number of resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#matches?' do
+        it 'matches when specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_most(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(4)
+                      .times
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when no resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(4)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'matches when less than specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(4)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when more than specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(4)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
       end
 
-      it 'matches when no resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'other_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected cardinality of "at most <n>"' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_most(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(2).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(true))
-      end
+          expect(matcher.failure_message)
+            .to(include(
+                  'expected: a plan including at most two resource changes'
+                ))
+        end
 
-      it 'matches when less than specified number of resource changes ' \
-         'meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_most(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(2).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(true))
-      end
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
 
-      it 'mismatches when more than specified number of resource changes ' \
-         'meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .build
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_most(4)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(2).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'indicates there are too many matching resource changes when more ' \
+           'than required are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(2).times
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include(
+                  'got: a plan including 4 matching resource changes'
+                ))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_most(2).times
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
 
     describe '#at_least' do
-      it 'matches when specified number of resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#matches?' do
+        it 'matches when specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_least(2)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(2)
+                      .times
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
+        it 'mismatches when no resource changes meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(2)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'mismatches when less than specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(2)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(false))
+        end
+
+        it 'matches when more than specified number of resource changes ' \
+           'meet definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .with_resource_deletion(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(2)
+                      .times
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
       end
 
-      it 'mismatches when no resource changes meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'other_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+      describe '#failure_message' do
+        it 'includes the expected cardinality of "at least <n>"' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_least(2)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(3).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(include(
+                  'expected: a plan including at least three resource changes'
+                ))
+        end
 
-      it 'mismatches when less than specified number of resource changes ' \
-         'meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'other_resource_type')
-                 .build
+        it 'indicates there are no resource changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_resource_changes
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_least(2)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(3).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(false))
-      end
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no resource changes'))
+        end
 
-      it 'matches when more than specified number of resource changes ' \
-         'meet definition' do
-        plan = Support::Builders
-                 .plan_builder
-                 .with_resource_creation(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .with_resource_deletion(type: 'some_resource_type')
-                 .build
+        it 'indicates there are no matching resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'other_resource_type')
+                   .with_resource_update(type: 'other_resource_type')
+                   .build
 
-        matcher = described_class
-                    .new(type: 'some_resource_type')
-                    .at_least(2)
-                    .times
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(3).times
+          matcher.matches?(plan)
 
-        expect(matcher.matches?(plan)).to(be(true))
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching resource changes'))
+        end
+
+        it 'indicates there are too few matching resource changes when less ' \
+           'than required are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(type: 'some_resource_type')
+                   .with_resource_update(type: 'some_resource_type')
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(3).times
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include(
+                  'got: a plan including two matching resource changes'
+                ))
+        end
+
+        it 'includes details of the available resource changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_creation(
+                     type: 'other_resource_type',
+                     name: 'first'
+                   )
+                   .with_resource_update(
+                     type: 'other_resource_type',
+                     name: 'second'
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .at_least(3).times
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available resource changes are:\n" \
+                "            - other_resource_type.first (create)\n" \
+                '            - other_resource_type.second (update)'
+              )
+            )
+        end
       end
     end
   end

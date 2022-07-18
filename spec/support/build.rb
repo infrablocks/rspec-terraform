@@ -155,11 +155,20 @@ module Support
       end
 
       def module_resource_address(values)
-        "#{values[:module_address]}.#{values[:type]}.#{values[:name]}"
+        module_address = values[:module_address]
+        type = values[:type]
+        name = values[:name]
+        index = values[:index] ? "[#{values[:index]}]" : ''
+
+        "#{module_address}.#{type}.#{name}#{index}"
       end
 
       def standard_resource_address(values)
-        "#{values[:type]}.#{values[:name]}"
+        type = values[:type]
+        name = values[:name]
+        index = values[:index] ? "[#{values[:index]}]" : ''
+
+        "#{type}.#{name}#{index}"
       end
     end
   end

@@ -8,6 +8,7 @@ require 'rspec/matchers/built_in/count_expectation'
 module RSpec
   module Terraform
     module Matchers
+      # rubocop:disable Metrics/ClassLength
       class IncludeResourceChange
         include RSpec::Matchers::BuiltIn::CountExpectation
 
@@ -39,7 +40,9 @@ module RSpec
 
         def failure_message
           "\nexpected: #{positive_expected_line}" \
-            "\n     got: #{positive_got_line}"
+            "\n     got: #{positive_got_line}" \
+            "\n          available resource changes are:" \
+            "\n#{resource_change_lines}"
         end
 
         def failure_message_when_negated
@@ -83,8 +86,10 @@ module RSpec
         end
 
         def positive_expected_line
-          cardinality = 'at least one'
-          expected_line = "a plan including #{cardinality} resource change"
+          cardinality = cardinality_fragment
+          plurality = expected_count.nil? || expected_count == 1 ? '' : 's'
+          expected_line =
+            "a plan including #{cardinality} resource change#{plurality}"
 
           unless @definition.empty?
             expected_line =
@@ -96,10 +101,38 @@ module RSpec
 
         def positive_got_line
           if plan.resource_changes.empty?
-            return 'a plan including no resource changes'
+            'a plan including no resource changes.'
+          else
+            count = attribute_matches(plan).count
+            amount = count.zero? ? 'no' : cardinality_amount(count)
+            plurality = count == 1 ? '' : 's'
+            "a plan including #{amount} matching resource change#{plurality}."
           end
+        end
 
-          "a plan with resource changes:\n#{resource_change_lines}"
+        def cardinality_fragment
+          qualifier = cardinality_qualifier
+          amount = cardinality_amount(expected_count)
+          "#{qualifier} #{amount}"
+        end
+
+        def cardinality_qualifier
+          case count_expectation_type
+          when :<= then 'at most'
+          when nil, :>= then 'at least'
+          when :== then 'exactly'
+          when :<=> then 'between'
+          end
+        end
+
+        def cardinality_amount(count)
+          case count
+          when Range then "#{count.first} and #{count.last}"
+          when nil, 1 then 'one'
+          when 2 then 'two'
+          when 3 then 'three'
+          else count.to_s
+          end
         end
 
         def definition_lines
@@ -118,6 +151,7 @@ module RSpec
             .join("\n")
         end
       end
+      # rubocop:enable Metrics/ClassLength
     end
   end
 end
