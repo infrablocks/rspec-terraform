@@ -12,7 +12,7 @@ module RSpec
       class IncludeResourceChange
         include RSpec::Matchers::BuiltIn::CountExpectation
 
-        attr_reader :definition, :plan
+        attr_reader :definition, :attributes, :plan
 
         def initialize(definition = {})
           @definition = definition
@@ -40,9 +40,7 @@ module RSpec
 
         def failure_message
           "\nexpected: #{positive_expected_line}" \
-            "\n     got: #{positive_got_line}" \
-            "\n          available resource changes are:" \
-            "\n#{resource_change_lines}"
+            "\n     got: #{positive_got_line}"
         end
 
         def failure_message_when_negated
@@ -86,19 +84,38 @@ module RSpec
         end
 
         def positive_expected_line
+          maybe_with_expected_attributes(
+            maybe_with_definition(
+              positive_plan_line
+            )
+          )
+        end
+
+        def positive_plan_line
           cardinality = cardinality_fragment
           plurality = expected_count.nil? || expected_count == 1 ? '' : 's'
-          expected_line =
-            "a plan including #{cardinality} resource change#{plurality}"
 
+          "a plan including #{cardinality} resource change#{plurality}"
+        end
+
+        def maybe_with_definition(expected_line)
           unless @definition.empty?
             expected_line =
               "#{expected_line} matching definition:\n#{definition_lines}"
           end
-
           expected_line
         end
 
+        def maybe_with_expected_attributes(expected_line)
+          unless @attributes.empty?
+            expected_line =
+              "#{expected_line}\n          with attribute values after " \
+              "the resource change is applied of:\n#{expected_attribute_lines}"
+          end
+          expected_line
+        end
+
+        # rubocop:disable Metrics/MethodLength
         def positive_got_line
           if plan.resource_changes.empty?
             'a plan including no resource changes.'
@@ -106,9 +123,21 @@ module RSpec
             count = attribute_matches(plan).count
             amount = count.zero? ? 'no' : cardinality_amount(count)
             plurality = count == 1 ? '' : 's'
-            "a plan including #{amount} matching resource change#{plurality}."
+            got_line =
+              "a plan including #{amount} matching " \
+              "resource change#{plurality}."
+
+            unless attributes.empty?
+              got_line =
+                "#{got_line}\n          relevant resource changes are:" \
+                "\n#{relevant_resource_change_lines}"
+            end
+
+            "#{got_line}\n          available resource changes are:" \
+              "\n#{available_resource_change_lines}"
           end
         end
+        # rubocop:enable Metrics/MethodLength
 
         def cardinality_fragment
           qualifier = cardinality_qualifier
@@ -136,21 +165,50 @@ module RSpec
         end
 
         def definition_lines
+          indent = '            '
           definition
-            .collect { |k, v| "            #{k}: #{v}" }
+            .collect { |k, v| "#{indent}#{k} = #{v.inspect}" }
             .join("\n")
         end
 
-        def resource_change_lines
-          plan.resource_changes
-            .collect do |rc|
-              address = rc.address
-              actions = rc.change.actions.join(', ')
-              "            - #{address} (#{actions})"
+        def expected_attribute_lines
+          indent = '            '
+          attribute_fragments = attributes.collect do |a|
+            "#{indent}#{render(a[:path])} = #{a[:value].inspect}"
+          end
+          attribute_fragments.join("\n")
+        end
+
+        # rubocop:disable Metrics/MethodLength
+        def relevant_resource_change_lines
+          relevant_lines = definition_matches(plan).collect do |rc|
+            address = rc.address
+            actions = rc.change.actions.join(', ')
+            attributes = rc.change.after_object
+            attribute_lines = attributes.collect do |key, value|
+              "                #{key} = #{value.inspect}"
             end
-            .join("\n")
+            attribute_lines = attribute_lines.join("\n")
+            "            - #{address} (#{actions})\n#{attribute_lines}"
+          end
+          relevant_lines.join("\n")
+        end
+        # rubocop:enable Metrics/MethodLength
+
+        def available_resource_change_lines
+          available_lines = plan.resource_changes.collect do |rc|
+            address = rc.address
+            actions = rc.change.actions.join(', ')
+            "            - #{address} (#{actions})"
+          end
+          available_lines.join("\n")
+        end
+
+        def render(path)
+          path.collect { |elem| elem.to_s }.join(',')
         end
       end
+
       # rubocop:enable Metrics/ClassLength
     end
   end

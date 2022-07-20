@@ -139,7 +139,7 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
             .to(
               include('expected: a plan including at least one ' \
                       "resource change matching definition:\n" \
-                      '            type: some_resource_type')
+                      '            type = "some_resource_type"')
             )
         end
 
@@ -287,8 +287,8 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
             .to(
               include('expected: a plan including at least one ' \
                       "resource change matching definition:\n" \
-                      "            type: some_resource_type\n" \
-                      "            name: some_resource_name\n")
+                      "            type = \"some_resource_type\"\n" \
+                      "            name = \"some_resource_name\"\n")
             )
         end
 
@@ -436,9 +436,9 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
             .to(
               include('expected: a plan including at least one ' \
                       "resource change matching definition:\n" \
-                      "            type: some_resource_type\n" \
-                      "            name: some_resource_name\n" \
-                      "            index: 1\n")
+                      "            type = \"some_resource_type\"\n" \
+                      "            name = \"some_resource_name\"\n" \
+                      "            index = 1\n")
             )
         end
 
@@ -1593,70 +1593,206 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
   describe 'attributes' do
     describe '#with_attribute_value' do
       context 'when attribute selector is a symbol' do
-        it 'matches when resource change has top-level after attribute ' \
-           'with name as specified by symbol and matching value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: 'some-value'
+        describe '#matches?' do
+          it 'matches when resource change has top-level after attribute ' \
+             'with name as specified by symbol and matching value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: 'some-value'
+                         }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, 'some-value')
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
 
-          expect(matcher.matches?(plan)).to(be(true))
+            expect(matcher.matches?(plan)).to(be(true))
+          end
+
+          it 'mismatches when resource change has top-level after attribute ' \
+             'with name as specified by symbol and mismatching value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: 'other-value'
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+
+          it 'mismatches when resource change does not have top-level after ' \
+             'attribute with name as specified by symbol' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           other_attribute: 'some-value'
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
         end
 
-        it 'mismatches when resource change has top-level after attribute ' \
-           'with name as specified by symbol and mismatching value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: 'other-value'
+        describe '#failure_message' do
+          it 'includes the expected attribute at the top-level' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(type: 'other_resource_type')
+                     .with_resource_update(type: 'other_resource_type')
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include('with attribute values after the resource change is ' \
+                        'applied of:' \
+                        "\n            some_attribute = \"some-value\"")
+              )
+          end
+
+          it 'indicates there are no resource changes when none are present' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_no_resource_changes
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(include('got: a plan including no resource changes'))
+          end
+
+          it 'indicates there are no matching resource changes when some ' \
+             'are present' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: 'other-value'
+                         }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, 'some-value')
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+            matcher.matches?(plan)
 
-          expect(matcher.matches?(plan)).to(be(false))
-        end
+            expect(matcher.failure_message)
+              .to(include('got: a plan including no matching resource changes'))
+          end
 
-        it 'mismatches when resource change does not have top-level after ' \
-           'attribute with name as specified by symbol' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         other_attribute: 'some-value'
+          it 'includes details of the relevant resource changes when some ' \
+             'matching the definition are present' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       name: 'first',
+                       change: {
+                         after: {
+                           some_attribute: 'other-value-1'
+                         },
+                         after_unknown: {}
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .with_resource_update(
+                       type: 'some_resource_type',
+                       name: 'second',
+                       change: {
+                         after: {
+                           some_attribute: 'other-value-2'
+                         },
+                         after_unknown: {}
+                       }
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, 'some-value')
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+            matcher.matches?(plan)
 
-          expect(matcher.matches?(plan)).to(be(false))
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  "relevant resource changes are:\n" \
+                  "            - some_resource_type.first (create)\n" \
+                  '                some_attribute = "other-value-1" ' \
+                  "(known, non-sensitive)\n" \
+                  "            - some_resource_type.second (update)\n" \
+                  '                some_attribute = "other-value-2" ' \
+                  '(known, non-sensitive)'
+                )
+              )
+          end
+
+          it 'includes details of the available resource changes when some ' \
+             'are present' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(
+                       type: 'other_resource_type',
+                       name: 'first'
+                     )
+                     .with_resource_update(
+                       type: 'other_resource_type',
+                       name: 'second'
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  "available resource changes are:\n" \
+                  "            - other_resource_type.first (create)\n" \
+                  '            - other_resource_type.second (update)'
+                )
+              )
+          end
         end
       end
 
