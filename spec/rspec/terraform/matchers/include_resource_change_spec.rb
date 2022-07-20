@@ -2164,6 +2164,35 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
           expect(matcher.matches?(plan)).to(be(true))
         end
 
+        it 'matches when resource change has after attribute ' \
+           'map value with symbol keys for expected map value with ' \
+           'string keys' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_resource_deletion(type: 'other_resource_type')
+                   .with_resource_creation(
+                     type: 'some_resource_type',
+                     change: {
+                       after: {
+                         some_attribute: {
+                           first: 1,
+                           second: 2
+                         }
+                       }
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(type: 'some_resource_type')
+                      .with_attribute_value(
+                        :some_attribute,
+                        { 'first' => 1, 'second' => 2 }
+                      )
+
+          expect(matcher.matches?(plan)).to(be(true))
+        end
+
         it 'mismatches when resource change has after attribute at symbol' \
            'with different map value' do
           plan = Support::Builders

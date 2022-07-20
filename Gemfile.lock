@@ -3,7 +3,7 @@ PATH
   specs:
     rspec-terraform (0.1.0.pre.10)
       rspec (>= 3.0)
-      ruby-terraform (= 1.7.0.pre.5)
+      ruby-terraform (= 1.7.0.pre.6)
 
 GEM
   remote: https://rubygems.org/
@@ -20,7 +20,7 @@ GEM
     concurrent-ruby (1.1.10)
     diff-lcs (1.5.0)
     docile (1.4.0)
-    excon (0.92.3)
+    excon (0.92.4)
     faker (2.21.0)
       i18n (>= 1.8.11, < 2)
     faraday (2.3.0)
@@ -100,7 +100,7 @@ GEM
     rubocop-rspec (2.12.1)
       rubocop (~> 1.31)
     ruby-progressbar (1.11.0)
-    ruby-terraform (1.7.0.pre.5)
+    ruby-terraform (1.7.0.pre.6)
       immutable-struct (~> 2.4)
       lino (~> 3.0)
     ruby2_keywords (0.0.5)
@@ -116,7 +116,7 @@ GEM
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
     sshkey (2.0.0)
-    tzinfo (2.0.4)
+    tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.2.0)
 
