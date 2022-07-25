@@ -5,6 +5,9 @@ require 'rspec/matchers'
 require 'rspec/matchers/built_in/eq'
 require 'rspec/matchers/built_in/count_expectation'
 
+require 'ruby_terraform/models/path'
+require 'ruby_terraform/models/path_set'
+
 module RSpec
   module Terraform
     module Matchers
@@ -172,11 +175,15 @@ module RSpec
         end
 
         def expected_attribute_lines
-          indent = '            '
-          attribute_fragments = attributes.collect do |a|
-            "#{indent}#{render(a[:path])} = #{a[:value].inspect}"
+          paths = attributes.collect do |attribute|
+            RubyTerraform::Models::Path.new(attribute[:path])
           end
-          attribute_fragments.join("\n")
+          path_set = RubyTerraform::Models::PathSet.new(paths)
+          values = attributes.collect do |attribute|
+            RubyTerraform::Models::Objects.box(attribute[:value])
+          end
+          object = RubyTerraform::Models::Objects.object(path_set, values)
+          object.render(level: 6, bare: true)
         end
 
         # rubocop:disable Metrics/MethodLength
