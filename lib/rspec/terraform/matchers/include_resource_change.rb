@@ -172,7 +172,8 @@ module RSpec
         end
 
         def expected_attribute_lines
-          indent = '            '
+          attributes_object = RubyTerraform::Models::Objects
+                                .indent = '            '
           attribute_fragments = attributes.collect do |a|
             "#{indent}#{render(a[:path])} = #{a[:value].inspect}"
           end
