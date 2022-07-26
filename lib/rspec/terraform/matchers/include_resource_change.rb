@@ -37,6 +37,8 @@ module RSpec
         def with_attribute_value(*args)
           stage, path, value = args.count == 3 ? args : [:after, *args]
           path = [path] if path.is_a?(Symbol)
+          path = RubyTerraform::Models::Path.new(path)
+          value = maybe_box_value(value)
           @attributes << { stage: stage, path: path, value: value }
           self
         end
@@ -69,18 +71,24 @@ module RSpec
           end
         end
 
+        def maybe_box_value(value)
+          if value.respond_to?(:matches?)
+            value
+          else
+            RubyTerraform::Models::Objects.box(value)
+          end
+        end
+
         def attribute_matcher(attribute)
           expected = attribute[:value]
           return expected if expected.respond_to?(:matches?)
 
-          RSpec::Matchers::BuiltIn::Eq.new(
-            RubyTerraform::Models::Objects.box(expected)
-          )
+          RSpec::Matchers::BuiltIn::Eq.new(expected)
         end
 
         def attribute_value(object, attribute)
           expected = attribute[:value]
-          actual = object.dig(*attribute[:path])
+          actual = attribute[:path].read(object)
           return actual&.unbox if expected.respond_to?(:matches?)
 
           actual
@@ -175,32 +183,24 @@ module RSpec
         end
 
         def expected_attribute_lines
-          paths = attributes.collect do |attribute|
-            RubyTerraform::Models::Path.new(attribute[:path])
-          end
+          paths = attributes.collect { |attribute| attribute[:path] }
           path_set = RubyTerraform::Models::PathSet.new(paths)
-          values = attributes.collect do |attribute|
-            RubyTerraform::Models::Objects.box(attribute[:value])
-          end
+          values = attributes.collect { |attribute| attribute[:value] }
           object = RubyTerraform::Models::Objects.object(path_set, values)
           object.render(level: 6, bare: true)
         end
 
-        # rubocop:disable Metrics/MethodLength
         def relevant_resource_change_lines
           relevant_lines = definition_matches(plan).collect do |rc|
             address = rc.address
             actions = rc.change.actions.join(', ')
             attributes = rc.change.after_object
-            attribute_lines = attributes.collect do |key, value|
-              "                #{key} = #{value.inspect}"
-            end
-            attribute_lines = attribute_lines.join("\n")
+            attribute_lines = attributes.render(level: 8, bare: true)
+
             "            - #{address} (#{actions})\n#{attribute_lines}"
           end
           relevant_lines.join("\n")
         end
-        # rubocop:enable Metrics/MethodLength
 
         def available_resource_change_lines
           available_lines = plan.resource_changes.collect do |rc|
@@ -209,10 +209,6 @@ module RSpec
             "            - #{address} (#{actions})"
           end
           available_lines.join("\n")
-        end
-
-        def render(path)
-          path.collect { |elem| elem.to_s }.join(',')
         end
       end
 
