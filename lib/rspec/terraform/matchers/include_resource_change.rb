@@ -48,11 +48,6 @@ module RSpec
             "\n     got: #{positive_got_line}"
         end
 
-        def failure_message_when_negated
-          "\nexpected: a plan including no resource changes" \
-            "\n     got: a plan including at least one resource change"
-        end
-
         private
 
         def definition_matches(plan)

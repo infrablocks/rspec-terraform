@@ -61,27 +61,6 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
             )
         end
       end
-
-      describe '#failure_message_when_negated' do
-        it 'indicates that resource changes were not expected but ' \
-           'there were some' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_creation
-                   .with_resource_deletion
-                   .build
-
-          matcher = described_class.new
-          matcher.matches?(plan)
-
-          expect(matcher.failure_message_when_negated)
-            .to(
-              include('expected: a plan including no resource changes')
-                .and(include('got: a plan including at least one resource ' \
-                             'change'))
-            )
-        end
-      end
     end
 
     describe 'with type defined' do
