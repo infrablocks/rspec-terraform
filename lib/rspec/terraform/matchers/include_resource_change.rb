@@ -138,16 +138,26 @@ module RSpec
               "a plan including #{amount} matching " \
               "resource change#{plurality}."
 
-            unless attributes.empty?
-              got_line =
-                "#{got_line}\n          relevant resource changes are:" \
-                "\n#{relevant_resource_change_lines}"
-            end
-
-            "#{got_line}\n          available resource changes are:" \
-              "\n#{available_resource_change_lines}"
+            with_available_resource_changes(
+              maybe_with_relevant_resource_changes(got_line)
+            )
           end
         end
+
+        def with_available_resource_changes(got_line)
+          "#{got_line}\n          available resource changes are:" \
+            "\n#{available_resource_change_lines}"
+        end
+
+        def maybe_with_relevant_resource_changes(got_line)
+          unless attributes.empty?
+            got_line =
+              "#{got_line}\n          relevant resource changes are:" \
+              "\n#{relevant_resource_change_lines}"
+          end
+          got_line
+        end
+
         # rubocop:enable Metrics/MethodLength
 
         def cardinality_fragment
@@ -185,7 +195,9 @@ module RSpec
         def expected_attribute_lines
           paths = attributes.collect { |attribute| attribute[:path] }
           path_set = RubyTerraform::Models::PathSet.new(paths)
-          values = attributes.collect { |attribute| attribute[:value] }
+          values = attributes.collect do |attribute|
+            with_matcher_renderable(attribute[:value])
+          end
           object = RubyTerraform::Models::Objects.object(path_set, values)
           object.render(level: 6, bare: true)
         end
@@ -209,6 +221,16 @@ module RSpec
             "            - #{address} (#{actions})"
           end
           available_lines.join("\n")
+        end
+
+        def with_matcher_renderable(value)
+          return value if value.respond_to?(:render)
+
+          value.define_singleton_method(:render) do |_|
+            "a value satisfying: #{value.description}"
+          end
+
+          value
         end
       end
 

@@ -2089,678 +2089,1055 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
       end
 
       context 'when attribute value is a scalar' do
-        it 'matches when resource change has after attribute at symbol ' \
-           'with specified scalar value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: 'some-value'
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, 'some-value')
-
-          expect(matcher.matches?(plan)).to(be(true))
-        end
-
-        it 'matches when resource change has after attribute at path ' \
-           'with specified scalar value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: 'some-value'
+        describe '#matches?' do
+          it 'matches when resource change has after attribute at symbol ' \
+             'with specified scalar value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: 'some-value'
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key], 'some-value'
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'mismatches when resource change has after attribute at symbol ' \
-           'with different scalar value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: 'other-value'
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, 'some-value')
-
-          expect(matcher.matches?(plan)).to(be(false))
-        end
-
-        it 'mismatches when resource change has after attribute at path with ' \
-           'different scalar value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: 'other-value'
+          it 'matches when resource change has after attribute at path ' \
+             'with specified scalar value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: 'some-value'
+                           }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key],
-                        'some-value'
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key], 'some-value'
+                        )
 
-          expect(matcher.matches?(plan)).to(be(false))
+            expect(matcher.matches?(plan)).to(be(true))
+          end
+
+          it 'mismatches when resource change has after attribute at symbol ' \
+             'with different scalar value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: 12
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 'some-value')
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+
+          it 'mismatches when resource change has after attribute at path ' \
+             'with different scalar value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: 'other-value'
+                           }
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key],
+                          'some-value'
+                        )
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+        end
+
+        describe '#failure_message' do
+          it 'includes the expected attribute at the top-level' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(type: 'other_resource_type')
+                     .with_resource_update(type: 'other_resource_type')
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 10)
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include('with attribute values after the resource change is ' \
+                        'applied of:' \
+                        "\n            some_attribute = 10")
+              )
+          end
+
+          it 'includes details of the relevant resource changes when some ' \
+             'matching the definition are present' do
+            plan =
+              Support::Builders
+                .plan_builder
+                .with_resource_creation(
+                  type: 'some_resource_type',
+                  name: 'first',
+                  change: {
+                    after: { some_attribute: 12 },
+                    after_unknown: {}
+                  }
+                )
+                .with_resource_update(
+                  type: 'some_resource_type',
+                  name: 'second',
+                  change: {
+                    after: { some_attribute: 14 },
+                    after_unknown: {}
+                  }
+                )
+                .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, 10)
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  "relevant resource changes are:\n" \
+                  "            - some_resource_type.first (create)\n" \
+                  "                some_attribute = 12\n" \
+                  "            - some_resource_type.second (update)\n" \
+                  "                some_attribute = 14\n"
+                )
+              )
+          end
         end
       end
 
       context 'when attribute value is a list' do
-        it 'matches when resource change has after attribute at symbol' \
-           'with specified list value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: %w[some-value-1 some-value-2]
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute,
-                        %w[some-value-1 some-value-2]
-                      )
-
-          expect(matcher.matches?(plan)).to(be(true))
-        end
-
-        it 'matches when resource change has after attribute at path ' \
-           'with specified list value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: %w[some-value-1 some-value-2]
+        describe '#matches?' do
+          it 'matches when resource change has after attribute at symbol' \
+             'with specified list value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: %w[some-value-1 some-value-2]
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key],
-                        %w[some-value-1 some-value-2]
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          %w[some-value-1 some-value-2]
+                        )
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'mismatches when resource change has after attribute at symbol ' \
-           'with different list value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: %w[value-1 value-2]
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute,
-                                            %w[value-2 value-3])
-
-          expect(matcher.matches?(plan)).to(be(false))
-        end
-
-        it 'mismatches when resource change has after attribute at path with ' \
-           'different list value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: %w[value-1 value-2]
+          it 'matches when resource change has after attribute at path ' \
+             'with specified list value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: %w[some-value-1 some-value-2]
+                           }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key],
-                        %w[value-2 value-3]
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key],
+                          %w[some-value-1 some-value-2]
+                        )
 
-          expect(matcher.matches?(plan)).to(be(false))
+            expect(matcher.matches?(plan)).to(be(true))
+          end
+
+          it 'mismatches when resource change has after attribute at symbol ' \
+             'with different list value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: %w[value-1 value-2]
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute,
+                                              %w[value-2 value-3])
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+
+          it 'mismatches when resource change has after attribute at path ' \
+             'with different list value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: %w[value-1 value-2]
+                           }
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key],
+                          %w[value-2 value-3]
+                        )
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+        end
+
+        describe '#failure_message' do
+          it 'includes the expected attribute as a list' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(type: 'other_resource_type')
+                     .with_resource_update(type: 'other_resource_type')
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, %w[a b c])
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include('with attribute values after the resource change is ' \
+                        'applied of:' \
+                        "\n            some_attribute = [" \
+                        "\n              \"a\"," \
+                        "\n              \"b\"," \
+                        "\n              \"c\"" \
+                        "\n            ]") \
+              )
+          end
+
+          it 'includes details of the relevant resource changes when some ' \
+             'matching the definition are present' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(
+                       type: 'some_resource_type', name: 'first',
+                       change: {
+                         after: { some_attribute: %w[a b c] },
+                         after_unknown: {}
+                       }
+                     )
+                     .with_resource_update(
+                       type: 'some_resource_type', name: 'second',
+                       change: {
+                         after: { some_attribute: %w[d e f] },
+                         after_unknown: {}
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, %w[g h i])
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  "relevant resource changes are:\n" \
+                  "            - some_resource_type.first (create)\n" \
+                  "                some_attribute = [\n" \
+                  "                  \"a\",\n" \
+                  "                  \"b\",\n" \
+                  "                  \"c\"\n" \
+                  "                ]\n" \
+                  "            - some_resource_type.second (update)\n" \
+                  "                some_attribute = [\n" \
+                  "                  \"d\",\n" \
+                  "                  \"e\",\n" \
+                  "                  \"f\"\n" \
+                  "                ]\n" \
+                )
+              )
+          end
         end
       end
 
       context 'when attribute value is a map' do
-        it 'matches when resource change has after attribute at symbol' \
-           'with specified map value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: { first: 1, second: 2 }
+        describe '#matches?' do
+          it 'matches when resource change has after attribute at symbol' \
+             'with specified map value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: { first: 1, second: 2 }
+                         }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute,
-                        { first: 1, second: 2 }
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          { first: 1, second: 2 }
+                        )
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'matches when resource change has after attribute at path ' \
-           'with specified map value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: {
+          it 'matches when resource change has after attribute at path ' \
+             'with specified map value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: {
+                               first: 1,
+                               second: 2
+                             }
+                           }
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key],
+                          { first: 1, second: 2 }
+                        )
+
+            expect(matcher.matches?(plan)).to(be(true))
+          end
+
+          it 'matches when resource change has after attribute ' \
+             'map value with symbol keys for expected map value with ' \
+             'string keys' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
                              first: 1,
                              second: 2
                            }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key],
-                        { first: 1, second: 2 }
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          { 'first' => 1, 'second' => 2 }
+                        )
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'matches when resource change has after attribute ' \
-           'map value with symbol keys for expected map value with ' \
-           'string keys' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           first: 1,
-                           second: 2
+          it 'mismatches when resource change has after attribute at symbol' \
+             'with different map value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: { first: 1, second: 2 }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute,
-                        { 'first' => 1, 'second' => 2 }
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute,
+                                              { second: 2, third: 3 })
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(false))
+          end
 
-        it 'mismatches when resource change has after attribute at symbol' \
-           'with different map value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: { first: 1, second: 2 }
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute,
-                                            { second: 2, third: 3 })
-
-          expect(matcher.matches?(plan)).to(be(false))
-        end
-
-        it 'mismatches when resource change has after attribute at path with ' \
-           'different map value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: { first: 1, second: 2 }
+          it 'mismatches when resource change has after attribute at path ' \
+             'with different map value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: { first: 1, second: 2 }
+                           }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key],
-                        { second: 2, third: 3 }
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key],
+                          { second: 2, third: 3 }
+                        )
 
-          expect(matcher.matches?(plan)).to(be(false))
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+        end
+
+        describe '#failure_message' do
+          it 'includes the expected attribute as a map' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(type: 'other_resource_type')
+                     .with_resource_update(type: 'other_resource_type')
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          {
+                            some_key: 123
+                          }
+                        )
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include('with attribute values after the resource change is ' \
+                        'applied of:' \
+                        "\n            some_attribute = {" \
+                        "\n              some_key = 123" \
+                        "\n            }") \
+              )
+          end
+
+          it 'includes details of the relevant resource changes when some ' \
+             'matching the definition are present' do
+            plan =
+              Support::Builders
+                .plan_builder
+                .with_resource_creation(
+                  type: 'some_resource_type',
+                  name: 'first',
+                  change: {
+                    after: { some_attribute: { some_key: 10 } },
+                    after_unknown: {}
+                  }
+                )
+                .with_resource_update(
+                  type: 'some_resource_type',
+                  name: 'second',
+                  change: {
+                    after: { some_attribute: { some_key: 12 } },
+                    after_unknown: {}
+                  }
+                )
+                .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute, { some_key: 14 }
+                        )
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  "relevant resource changes are:\n" \
+                  "            - some_resource_type.first (create)\n" \
+                  "                some_attribute = {\n" \
+                  "                  some_key = 10\n" \
+                  "                }\n" \
+                  "            - some_resource_type.second (update)\n" \
+                  "                some_attribute = {\n" \
+                  "                  some_key = 12\n" \
+                  "                }\n" \
+                )
+              )
+          end
         end
       end
 
       context 'when attribute value is a complex nested value' do
-        it 'matches when resource change has after attribute at symbol' \
-           'with specified complex nested value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           first: [{ a: 1, b: 2 }],
-                           second: [3, 4, 5]
-                         }
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute,
-                        {
-                          first: [{ a: 1, b: 2 }],
-                          second: [3, 4, 5]
-                        }
-                      )
-
-          expect(matcher.matches?(plan)).to(be(true))
-        end
-
-        it 'matches when resource change has after attribute at path ' \
-           'with specified complex nested value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: {
+        describe '#matches?' do
+          it 'matches when resource change has after attribute at symbol' \
+             'with specified complex nested value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
                              first: [{ a: 1, b: 2 }],
                              second: [3, 4, 5]
                            }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key],
-                        {
-                          first: [{ a: 1, b: 2 }],
-                          second: [3, 4, 5]
-                        }
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          {
+                            first: [{ a: 1, b: 2 }],
+                            second: [3, 4, 5]
+                          }
+                        )
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'mismatches when resource change has after attribute at symbol' \
-           'with different complex nested value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           first: [{ a: 1, b: 2 }],
-                           second: [3, 4, 5]
+          it 'matches when resource change has after attribute at path ' \
+             'with specified complex nested value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: {
+                               first: [{ a: 1, b: 2 }],
+                               second: [3, 4, 5]
+                             }
+                           }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute,
-                                            {
-                                              first: [{ a: 1, c: 3 }],
-                                              second: [3, 4, 5]
-                                            })
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key],
+                          {
+                            first: [{ a: 1, b: 2 }],
+                            second: [3, 4, 5]
+                          }
+                        )
 
-          expect(matcher.matches?(plan)).to(be(false))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'mismatches when resource change has after attribute at path with ' \
-           'different complex nested value' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: {
+          it 'mismatches when resource change has after attribute at symbol' \
+             'with different complex nested value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
                              first: [{ a: 1, b: 2 }],
                              second: [3, 4, 5]
                            }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        %i[some_attribute some_key],
-                        {
-                          first: [{ a: 1, c: 3 }],
-                          second: [3, 4, 5]
-                        }
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute,
+                                              {
+                                                first: [{ a: 1, c: 3 }],
+                                                second: [3, 4, 5]
+                                              })
 
-          expect(matcher.matches?(plan)).to(be(false))
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+
+          it 'mismatches when resource change has after attribute at path ' \
+             'with different complex nested value' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: {
+                               first: [{ a: 1, b: 2 }],
+                               second: [3, 4, 5]
+                             }
+                           }
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          %i[some_attribute some_key],
+                          {
+                            first: [{ a: 1, c: 3 }],
+                            second: [3, 4, 5]
+                          }
+                        )
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+        end
+
+        describe '#failure_message' do
+          it 'includes the expected attribute as a complex nested structure' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(type: 'other_resource_type')
+                     .with_resource_update(type: 'other_resource_type')
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          {
+                            first: [{ a: 1, b: 2 }],
+                            second: [3, 4, 5]
+                          }
+                        )
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include('with attribute values after the resource change is ' \
+                        'applied of:' \
+                        "\n            some_attribute = {" \
+                        "\n              first = [" \
+                        "\n                {" \
+                        "\n                  a = 1" \
+                        "\n                  b = 2" \
+                        "\n                }" \
+                        "\n              ]" \
+                        "\n              second = [" \
+                        "\n                3," \
+                        "\n                4," \
+                        "\n                5" \
+                        "\n              ]" \
+                        "\n            }") \
+              )
+          end
+
+          it 'includes details of the relevant resource changes when some ' \
+             'matching the definition are present' do
+            plan =
+              Support::Builders
+                .plan_builder
+                .with_resource_creation(
+                  type: 'some_resource_type',
+                  name: 'first',
+                  change: {
+                    after: {
+                      some_attribute: {
+                        first: [{ a: 1, b: 2 }], second: [3, 4, 5]
+                      }
+                    },
+                    after_unknown: {}
+                  }
+                )
+                .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, { some_key: 14 })
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  "relevant resource changes are:\n" \
+                  "            - some_resource_type.first (create)\n" \
+                  "                some_attribute = {\n" \
+                  "                  first = [\n" \
+                  "                    {\n" \
+                  "                      a = 1\n" \
+                  "                      b = 2\n" \
+                  "                    }\n" \
+                  "                  ]\n" \
+                  "                  second = [\n" \
+                  "                    3,\n" \
+                  "                    4,\n" \
+                  "                    5\n" \
+                  "                  ]\n" \
+                  "                }\n"
+                )
+              )
+          end
         end
       end
 
       context 'when attribute value is a matcher' do
-        it 'matches when resource change has after attribute ' \
-           'with scalar value satisfying specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: 'some-value'
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, including('some'))
-
-          expect(matcher.matches?(plan)).to(be(true))
-        end
-
-        it 'matches when resource change has after attribute ' \
-           'with list value satisfying specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: [1, 2, 3]
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, including(2))
-
-          expect(matcher.matches?(plan)).to(be(true))
-        end
-
-        it 'matches when resource change has after attribute ' \
-           'with map value satisfying specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           first: 1,
-                           second: 2
+        describe '#matches?' do
+          it 'matches when resource change has after attribute ' \
+             'with scalar value satisfying specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: 'some-value'
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute, including(first: 1)
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute, including('some')
+                        )
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'matches when resource change has after attribute ' \
-           'with complex nested value satisfying specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: [
-                             {
-                               first: 1,
-                               second: 2
-                             }
-                           ]
+          it 'matches when resource change has after attribute ' \
+             'with list value satisfying specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: [1, 2, 3]
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute,
-                        including(some_key: [{ first: 1, second: 2 }])
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, including(2))
 
-          expect(matcher.matches?(plan)).to(be(true))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'mismatches when resource change has after attribute' \
-           'with scalar value that does not satisfy specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: 'some-value'
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, including('other'))
-
-          expect(matcher.matches?(plan)).to(be(false))
-        end
-
-        it 'mismatches when resource change has after attribute ' \
-           'with list value that does not satisfy specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: [4, 5, 6]
-                       }
-                     }
-                   )
-                   .build
-
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(:some_attribute, including(2))
-
-          expect(matcher.matches?(plan)).to(be(false))
-        end
-
-        it 'mismatches when resource change has after attribute ' \
-           'with map value that does not satisfy specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           third: 3,
-                           fourth: 4
+          it 'matches when resource change has after attribute ' \
+             'with map value satisfying specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             first: 1,
+                             second: 2
+                           }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute, including(first: 1)
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute, including(first: 1)
+                        )
 
-          expect(matcher.matches?(plan)).to(be(false))
-        end
+            expect(matcher.matches?(plan)).to(be(true))
+          end
 
-        it 'mismatches when resource change has after attribute ' \
-           'with complex nested value that does not satisfy ' \
-           'specified matcher' do
-          plan = Support::Builders
-                   .plan_builder
-                   .with_resource_deletion(type: 'other_resource_type')
-                   .with_resource_creation(
-                     type: 'some_resource_type',
-                     change: {
-                       after: {
-                         some_attribute: {
-                           some_key: [
-                             {
-                               third: 3,
-                               fourth: 4
-                             }
-                           ]
+          it 'matches when resource change has after attribute ' \
+             'with complex nested value satisfying specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: [
+                               {
+                                 first: 1,
+                                 second: 2
+                               }
+                             ]
+                           }
                          }
                        }
-                     }
-                   )
-                   .build
+                     )
+                     .build
 
-          matcher = described_class
-                      .new(type: 'some_resource_type')
-                      .with_attribute_value(
-                        :some_attribute,
-                        including(some_key: [{ first: 1, second: 2 }])
-                      )
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          including(some_key: [{ first: 1, second: 2 }])
+                        )
 
-          expect(matcher.matches?(plan)).to(be(false))
+            expect(matcher.matches?(plan)).to(be(true))
+          end
+
+          it 'mismatches when resource change has after attribute' \
+             'with scalar value that does not satisfy specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: 'some-value'
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute, including('other')
+                        )
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+
+          it 'mismatches when resource change has after attribute ' \
+             'with list value that does not satisfy specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: [4, 5, 6]
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(:some_attribute, including(2))
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+
+          it 'mismatches when resource change has after attribute ' \
+             'with map value that does not satisfy specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             third: 3,
+                             fourth: 4
+                           }
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute, including(first: 1)
+                        )
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+
+          it 'mismatches when resource change has after attribute ' \
+             'with complex nested value that does not satisfy ' \
+             'specified matcher' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_deletion(type: 'other_resource_type')
+                     .with_resource_creation(
+                       type: 'some_resource_type',
+                       change: {
+                         after: {
+                           some_attribute: {
+                             some_key: [
+                               {
+                                 third: 3,
+                                 fourth: 4
+                               }
+                             ]
+                           }
+                         }
+                       }
+                     )
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute,
+                          including(some_key: [{ first: 1, second: 2 }])
+                        )
+
+            expect(matcher.matches?(plan)).to(be(false))
+          end
+        end
+
+        describe '#failure_message' do
+          it 'includes the expected attribute using the matcher description' do
+            plan = Support::Builders
+                     .plan_builder
+                     .with_resource_creation(type: 'other_resource_type')
+                     .with_resource_update(type: 'other_resource_type')
+                     .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute, including('some')
+                        )
+            matcher.matches?(plan)
+
+            matcher_description = 'a value satisfying: including "some"'
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  'with attribute values after the resource change is ' \
+                  'applied of:' \
+                  "\n            some_attribute = #{matcher_description}"
+                )
+              )
+          end
+
+          it 'includes details of the relevant resource changes when some ' \
+             'matching the definition are present' do
+            plan =
+              Support::Builders
+                .plan_builder
+                .with_resource_creation(
+                  type: 'some_resource_type',
+                  name: 'first',
+                  change: {
+                    after: { some_attribute: 'other-1' },
+                    after_unknown: {}
+                  }
+                )
+                .with_resource_update(
+                  type: 'some_resource_type',
+                  name: 'second',
+                  change: {
+                    after: { some_attribute: 'other-2' },
+                    after_unknown: {}
+                  }
+                )
+                .build
+
+            matcher = described_class
+                        .new(type: 'some_resource_type')
+                        .with_attribute_value(
+                          :some_attribute, including('some')
+                        )
+            matcher.matches?(plan)
+
+            expect(matcher.failure_message)
+              .to(
+                include(
+                  "relevant resource changes are:\n" \
+                  "            - some_resource_type.first (create)\n" \
+                  "                some_attribute = \"other-1\"\n" \
+                  "            - some_resource_type.second (update)\n" \
+                  "                some_attribute = \"other-2\"\n"
+                )
+              )
+          end
         end
       end
     end
