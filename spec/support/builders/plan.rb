@@ -11,6 +11,7 @@ module Support
     class Plan
       def initialize
         @resource_change_contents = []
+        @output_change_contents = []
       end
 
       def with_resource_change(content = {})
@@ -48,10 +49,31 @@ module Support
         self
       end
 
+      def with_output_change(name, change = {})
+        @output_change_contents << [:any, name, change]
+        self
+      end
+
+      def with_output_creation(name, change = {})
+        @output_change_contents << [:create, name, change]
+        self
+      end
+
+      def with_output_update(name, change = {})
+        @output_change_contents << [:update, name, change]
+        self
+      end
+
+      def with_output_deletion(name, change = {})
+        @output_change_contents << [:delete, name, change]
+        self
+      end
+
       def build
         RubyTerraform::Models::Plan.new(
           Support::Build.plan_content(
-            resource_changes: resource_changes
+            resource_changes: resource_changes,
+            output_changes: output_changes
           )
         )
       end
@@ -79,6 +101,19 @@ module Support
           Build.resource_change_content(
             content.merge(change: change_content)
           )
+        end
+      end
+
+      def output_changes
+        @output_change_contents.inject({}) do |acc, item|
+          content = item[2]
+          name = item[1]
+          change_type = item[0]
+          change_content =
+            change_content_build_function(change_type)
+              .call(content || {}, { type: :output })
+
+          acc.merge(name => change_content)
         end
       end
     end
