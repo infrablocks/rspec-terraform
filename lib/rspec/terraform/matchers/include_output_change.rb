@@ -14,7 +14,7 @@ module RSpec
           !definition_matches(plan).empty?
         end
 
-        def with_value(i)
+        def with_value(_)
           self
         end
 

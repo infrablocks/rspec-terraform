@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/NestedGroups
 describe RSpec::Terraform::Matchers::IncludeOutputChange do
   describe 'definitions' do
     describe 'for name' do
@@ -35,7 +36,7 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
     describe 'for name and query' do
       describe '#matches?' do
         it 'returns true when the plan contains an output change with the ' \
-         'provided name and of the queried type' do
+           'provided name and of the queried type' do
           plan = Support::Builders
                    .plan_builder
                    .with_output_creation('some_output')
@@ -50,7 +51,7 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
         end
 
         it 'returns false when the plan does not contain an output change ' \
-         'with the provided name' do
+           'with the provided name' do
           plan = Support::Builders
                    .plan_builder
                    .with_output_creation('other_output')
@@ -65,7 +66,7 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
         end
 
         it 'returns false when the plan does not contain an output change ' \
-         'of the queried type' do
+           'of the queried type' do
           plan = Support::Builders
                    .plan_builder
                    .with_output_update('some_output')
@@ -104,6 +105,7 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
 
         it 'returns false when the plan does not contain an output change ' \
            'with after value equal to the provided scalar value' do
+          pending('still in progress')
           plan = Support::Builders
                    .plan_builder
                    .with_output_change(
@@ -122,3 +124,4 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
     end
   end
 end
+# rubocop:enable RSpec/NestedGroups
