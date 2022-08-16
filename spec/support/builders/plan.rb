@@ -69,6 +69,11 @@ module Support
         self
       end
 
+      def with_no_output_changes
+        @output_change_contents = []
+        self
+      end
+
       def build
         RubyTerraform::Models::Plan.new(
           Support::Build.plan_content(
