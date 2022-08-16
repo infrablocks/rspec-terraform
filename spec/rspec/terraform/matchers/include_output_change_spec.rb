@@ -105,7 +105,6 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
 
         it 'returns false when the plan does not contain an output change ' \
            'with after value equal to the provided scalar value' do
-          pending('still in progress')
           plan = Support::Builders
                    .plan_builder
                    .with_output_change(
