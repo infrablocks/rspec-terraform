@@ -207,6 +207,88 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
           expect(matcher.matches?(plan)).to(be(false))
         end
       end
+
+      describe '#failure_message' do
+        it 'includes the expected output change definition' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_output_creation('other_output_1')
+                   .with_output_update('other_output_2')
+                   .build
+
+          matcher = described_class.new(
+            name: 'some_output',
+            create?: true
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include('expected: a plan including at least one ' \
+                      "output change matching definition:\n" \
+                      "            name = \"some_output\"\n" \
+                      "            create? = true\n")
+            )
+        end
+
+        it 'indicates there are no output changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_output_changes
+                   .build
+
+          matcher = described_class.new(
+            name: 'some_output',
+            create?: true
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no output changes'))
+        end
+
+        it 'indicates there are no matching output changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_output_creation('other_output_1')
+                   .with_output_update('other_output_2')
+                   .build
+
+          matcher = described_class.new(
+            name: 'some_output',
+            create?: true
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching output changes'))
+        end
+
+        it 'includes details of the available output changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_output_creation('other_output_1')
+                   .with_output_update('other_output_2')
+                   .build
+
+          matcher = described_class.new(
+            name: 'some_output',
+            create?: true
+          )
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available output changes are:\n" \
+                "            - other_output_1 (create)\n" \
+                '            - other_output_2 (update)'
+              )
+            )
+        end
+      end
     end
   end
 
@@ -390,6 +472,121 @@ describe RSpec::Terraform::Matchers::IncludeOutputChange do
                       )
 
           expect(matcher.matches?(plan)).to(be(false))
+        end
+      end
+
+      describe '#failure_message' do
+        it 'includes the expected value' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_output_creation(
+                     'other_output_1',
+                     after: 'other-value-1'
+                   )
+                   .with_output_update(
+                     'other_output_2',
+                     after: 'other-value-2'
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(name: 'some_output')
+                      .with_value('some-value')
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include('with value after the output change is applied of:' \
+                      "\n            value = \"some-value\"")
+            )
+        end
+
+        it 'indicates there are no output changes when none are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_no_output_changes
+                   .build
+
+          matcher = described_class
+                      .new(name: 'some_output')
+                      .with_value('some-value')
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no output changes'))
+        end
+
+        it 'indicates there are no matching output changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_output_creation(
+                     'some_output',
+                     after: {
+                       some_key: 'other-value'
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(name: 'some_output')
+                      .with_value(some_key: 'some-value')
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(include('got: a plan including no matching output changes'))
+        end
+
+        it 'includes details of the relevant output changes when some ' \
+           'matching the definition are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_output_creation(
+                     'some_output',
+                     after: {
+                       some_key: 'other-value-1'
+                     }
+                   )
+                   .build
+
+          matcher = described_class
+                      .new(name: 'some_output')
+                      .with_value(some_key: 'some-value')
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "relevant output changes are:\n" \
+                "            - some_output (create)\n" \
+                "                value = {\n" \
+                "                  some_key = \"other-value-1\"\n" \
+                '                }'
+              )
+            )
+        end
+
+        it 'includes details of the available output changes when some ' \
+           'are present' do
+          plan = Support::Builders
+                   .plan_builder
+                   .with_output_creation('other_output_1')
+                   .with_output_update('other_output_2')
+                   .build
+
+          matcher = described_class
+                      .new(name: 'some_output')
+                      .with_value('some-value')
+          matcher.matches?(plan)
+
+          expect(matcher.failure_message)
+            .to(
+              include(
+                "available output changes are:\n" \
+                "            - other_output_1 (create)\n" \
+                '            - other_output_2 (update)'
+              )
+            )
         end
       end
     end

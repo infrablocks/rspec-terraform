@@ -3,6 +3,7 @@
 module RSpec
   module Terraform
     module Matchers
+      # rubocop:disable Metrics/ClassLength
       class IncludeOutputChange
         attr_reader :definition, :value, :plan
 
@@ -69,8 +70,10 @@ module RSpec
         end
 
         def positive_expected_line
-          maybe_with_definition(
-            positive_plan_line
+          maybe_with_expected_value(
+            maybe_with_definition(
+              positive_plan_line
+            )
           )
         end
 
@@ -79,9 +82,18 @@ module RSpec
         end
 
         def maybe_with_definition(expected_line)
-          unless @definition.empty?
+          unless definition.empty?
             expected_line =
               "#{expected_line} matching definition:\n#{definition_lines}"
+          end
+          expected_line
+        end
+
+        def maybe_with_expected_value(expected_line)
+          unless value.nil?
+            expected_line =
+              "#{expected_line}\n          with value after " \
+              "the output change is applied of:\n#{expected_value_lines}"
           end
           expected_line
         end
@@ -93,12 +105,21 @@ module RSpec
             .join("\n")
         end
 
+        def expected_value_lines
+          renderable_value = with_matcher_renderable(value)
+          value_object =
+            RubyTerraform::Models::Values.map(value: renderable_value)
+          value_object.render(level: 6, bare: true)
+        end
+
         def positive_got_line
           if plan.output_changes.empty?
             'a plan including no output changes.'
           else
             with_available_output_changes(
-              'a plan including no matching output changes.'
+              maybe_with_relevant_output_changes(
+                'a plan including no matching output changes.'
+              )
             )
           end
         end
@@ -106,6 +127,15 @@ module RSpec
         def with_available_output_changes(got_line)
           "#{got_line}\n          available output changes are:" \
             "\n#{available_output_change_lines}"
+        end
+
+        def maybe_with_relevant_output_changes(got_line)
+          unless value.nil?
+            got_line =
+              "#{got_line}\n          relevant output changes are:" \
+              "\n#{relevant_output_change_lines}"
+          end
+          got_line
         end
 
         def available_output_change_lines
@@ -116,7 +146,32 @@ module RSpec
           end
           available_lines.join("\n")
         end
+
+        def relevant_output_change_lines
+          relevant_lines = definition_matches(plan).collect do |oc|
+            name = oc.name
+            actions = oc.change.actions.join(', ')
+            value = oc.change.after_object
+            value_object =
+              RubyTerraform::Models::Values.map(value: value)
+            value_lines = value_object.render(level: 8, bare: true)
+
+            "            - #{name} (#{actions})\n#{value_lines}"
+          end
+          relevant_lines.join("\n")
+        end
+
+        def with_matcher_renderable(value)
+          return value if value.respond_to?(:render)
+
+          value.define_singleton_method(:render) do |_|
+            "a value satisfying: #{value.description}"
+          end
+
+          value
+        end
       end
+      # rubocop:enable Metrics/ClassLength
     end
   end
 end
