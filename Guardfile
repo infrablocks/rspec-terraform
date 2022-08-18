@@ -9,6 +9,11 @@ if `uname` =~ /Darwin/
 end
 
 guard(
+  :rubocop,
+  all_on_start: true
+)
+
+guard(
   :rspec,
   cmd: 'bundle exec rspec',
   all_after_pass: true,
