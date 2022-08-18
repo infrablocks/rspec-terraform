@@ -3,6 +3,9 @@
 require 'spec_helper'
 
 describe RSpec::Terraform::Helpers::Apply do
+  # TODO: throw if no configuration_directory provided.
+  # TODO: add support for vars block
+
   describe 'by default' do
     it 'instructs Terraform not to request interactive input' do
       stub_ruby_terraform
@@ -25,6 +28,17 @@ describe RSpec::Terraform::Helpers::Apply do
         .to(have_received(:apply)
               .with(hash_including(auto_approve: true)))
     end
+
+    it 'does not specify a state file' do
+      stub_ruby_terraform
+
+      helper = described_class.new
+      helper.execute
+
+      expect(RubyTerraform)
+        .not_to(have_received(:apply)
+              .with(hash_including(:state_file)))
+    end
   end
 
   context 'when configuration overrides provided' do
@@ -43,7 +57,7 @@ describe RSpec::Terraform::Helpers::Apply do
                     )))
     end
 
-    it 'uses the specified state file' do
+    it 'uses the specified state file when specified' do
       stub_ruby_terraform
 
       helper = described_class.new(
@@ -98,6 +112,33 @@ describe RSpec::Terraform::Helpers::Apply do
         .to(have_received(:apply)
               .with(hash_including(
                       chdir: 'provided/terraform/configuration'
+                    )))
+    end
+
+    it 'passes configuration overrides to configuration provider ' \
+       'when present' do
+      stub_ruby_terraform
+
+      in_memory_configuration = {
+        configuration_directory: 'provided/terraform/configuration'
+      }
+      override_configuration = {
+        configuration_directory: 'override/terraform/configuration'
+      }
+      configuration_provider =
+        RSpec::Terraform::Configuration.in_memory_provider(
+          in_memory_configuration
+        )
+
+      helper = described_class.new(
+        override_configuration, configuration_provider
+      )
+      helper.execute
+
+      expect(RubyTerraform)
+        .to(have_received(:apply)
+              .with(hash_including(
+                      chdir: 'override/terraform/configuration'
                     )))
     end
   end
