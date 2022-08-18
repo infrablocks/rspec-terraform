@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'ruby_terraform'
+require_relative '../merger'
 
 module RSpec
   module Terraform
@@ -11,20 +12,11 @@ module RSpec
 
           def initialize(configuration = {})
             @configuration = configuration
+            @merger = Merger.new
           end
 
           def resolve(overrides = {})
-            left_vars = configuration[:vars] || {}
-            right_vars = overrides[:vars] || {}
-            vars = left_vars.merge(right_vars)
-
-            top_level_merge = configuration.merge(overrides)
-
-            if left_vars == {} && right_vars == {}
-              top_level_merge
-            else
-              top_level_merge.merge(vars: vars)
-            end
+            @merger.merge(configuration, overrides)
           end
         end
       end

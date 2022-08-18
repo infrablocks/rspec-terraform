@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'configuration/providers'
+require_relative 'configuration/merger'
 
 module RSpec
   module Terraform

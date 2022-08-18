@@ -39,28 +39,38 @@ describe RSpec::Terraform::Configuration::Providers::InMemory do
               ))
       end
 
-      it 'shallow merges vars' do
+      it 'accumulates by shallow merging accumulating ' \
+         'configuration parameters' do
         configuration = {
           vars: {
             first_var: 1,
             second_var: 2
-          }
+          },
+          var_files: %w[path/to/file1.tfvars path/to/file2.tfvars]
         }
         overrides = {
           vars: {
             second_var: 'two',
             third_var: 'three'
-          }
+          },
+          var_files: %w[path/to/file3.tfvars]
         }
         provider = described_class.new(configuration)
         result = provider.resolve(overrides)
 
-        expect(result[:vars])
+        expect(result)
           .to(eq(
                 {
-                  first_var: 1,
-                  second_var: 'two',
-                  third_var: 'three'
+                  vars: {
+                    first_var: 1,
+                    second_var: 'two',
+                    third_var: 'three'
+                  },
+                  var_files: %w[
+                    path/to/file1.tfvars
+                    path/to/file2.tfvars
+                    path/to/file3.tfvars
+                  ]
                 }
               ))
       end

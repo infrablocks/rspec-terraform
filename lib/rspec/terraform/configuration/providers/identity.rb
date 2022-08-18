@@ -7,7 +7,7 @@ module RSpec
     module Configuration
       module Providers
         class Identity
-          def resolve(overrides)
+          def resolve(overrides = {})
             overrides
           end
         end
