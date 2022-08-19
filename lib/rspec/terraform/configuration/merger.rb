@@ -17,29 +17,36 @@ module RSpec
         end
 
         def merge_accumulating_maps(left, right)
-          left_vars = left[:vars] || {}
-          right_vars = right[:vars] || {}
-          vars = left_vars.merge(right_vars)
-
-          merged = {}
-          unless left_vars == {} && right_vars == {}
-            merged = merged.merge(vars: vars)
+          [:vars, :backend_config].inject({}) do |merged, parameter|
+            merge_accumulating_map(parameter, merged, left, right)
           end
+        end
 
-          merged
+        def merge_accumulating_map(parameter, accumulator, left, right)
+          left_value = left[parameter] || {}
+          right_value = right[parameter] || {}
+          merged_value = left_value.merge(right_value)
+
+          return accumulator if merged_value == {}
+
+          accumulator.merge(parameter => merged_value)
         end
 
         def merge_accumulating_lists(left, right)
-          left_var_files = left[:var_files] || []
-          right_var_files = right[:var_files] || []
-          var_files = left_var_files + right_var_files
-
-          merged = {}
-          unless left_var_files == [] && right_var_files == []
-            merged = merged.merge(var_files: var_files)
+          [:var_files, :targets, :replaces, :plugin_dirs, :platforms]
+            .inject({}) do |merged, parameter|
+            merge_accumulating_list(parameter, merged, left, right)
           end
+        end
 
-          merged
+        def merge_accumulating_list(parameter, accumulator, left, right)
+          left_value = left[parameter] || []
+          right_value = right[parameter] || []
+          merged_value = left_value + right_value
+
+          return accumulator if merged_value == []
+
+          accumulator.merge(parameter => merged_value)
         end
       end
     end
