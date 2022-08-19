@@ -17,7 +17,7 @@ module RSpec
         end
 
         def merge_accumulating_maps(left, right)
-          [:vars, :backend_config].inject({}) do |merged, parameter|
+          %i[vars backend_config].inject({}) do |merged, parameter|
             merge_accumulating_map(parameter, merged, left, right)
           end
         end
@@ -33,7 +33,7 @@ module RSpec
         end
 
         def merge_accumulating_lists(left, right)
-          [:var_files, :targets, :replaces, :plugin_dirs, :platforms]
+          %i[var_files targets replaces plugin_dirs platforms]
             .inject({}) do |merged, parameter|
             merge_accumulating_list(parameter, merged, left, right)
           end

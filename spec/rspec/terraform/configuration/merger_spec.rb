@@ -27,7 +27,7 @@ describe RSpec::Terraform::Configuration::Merger do
             ))
     end
 
-    [:vars, :backend_config].each do |map_parameter|
+    %i[vars backend_config].each do |map_parameter|
       it "merges accumulating #{map_parameter} map parameter by " \
          'shallow merging left and right' do
         left = {
@@ -58,7 +58,7 @@ describe RSpec::Terraform::Configuration::Merger do
       end
     end
 
-    [:var_files, :targets, :replaces, :plugin_dirs, :platforms]
+    %i[var_files targets replaces plugin_dirs platforms]
       .each do |list_parameter|
       it "merges accumulating #{list_parameter} list parameter by " \
          'shallow merging left and right' do
