@@ -2,6 +2,7 @@
 
 require_relative 'configuration/providers'
 require_relative 'configuration/merger'
+require_relative 'configuration/var_captor'
 
 module RSpec
   module Terraform
