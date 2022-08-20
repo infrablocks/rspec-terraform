@@ -1,8 +1,14 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'fileutils'
 
 describe RSpec::Terraform::Helpers::Apply do
+  before do
+    stub_rm_rf
+    stub_mkdir_p
+  end
+
   # rubocop:disable RSpec/MultipleExpectations
   it 'invokes init before apply' do
     init = stub_ruby_terraform_init
@@ -23,8 +29,26 @@ describe RSpec::Terraform::Helpers::Apply do
 
       helper = described_class.new
 
-      expect { helper.execute }.to(raise_error(StandardError))
+      expect { helper.execute }
+        .to(raise_error(
+              StandardError,
+              'Required parameter: `:configuration_directory` missing.'
+            ))
     end
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'does not delete and recreate the configuration directory ' \
+       'before invoking Terraform' do
+      stub_ruby_terraform_init
+      stub_ruby_terraform_apply
+
+      helper = described_class.new(required_parameters)
+      helper.execute
+
+      expect(FileUtils).not_to(have_received(:rm_rf))
+      expect(FileUtils).not_to(have_received(:mkdir_p))
+    end
+    # rubocop:enable RSpec/MultipleExpectations
 
     describe 'for init' do
       it 'instructs Terraform not to request interactive input' do
@@ -53,6 +77,20 @@ describe RSpec::Terraform::Helpers::Apply do
                 .with(hash_including(
                         chdir: 'path/to/terraform/configuration'
                       )))
+      end
+
+      it 'does not include the from_module parameter' do
+        init = stub_ruby_terraform_init
+        stub_ruby_terraform_apply
+
+        helper = described_class.new(
+          configuration_directory: 'path/to/terraform/configuration'
+        )
+        helper.execute
+
+        expect(init)
+          .not_to(have_received(:execute)
+                    .with(hash_including(:from_module)))
       end
 
       it 'uses a Terraform binary of "terraform"' do
@@ -129,6 +167,236 @@ describe RSpec::Terraform::Helpers::Apply do
 
         expect(apply)
           .to(have_received(:execute))
+      end
+    end
+  end
+
+  context 'when Terraform execution mode is :in_place' do
+    def terraform_execution_mode
+      :in_place
+    end
+
+    around do |example|
+      previous = RSpec.configuration.terraform_execution_mode
+      RSpec.configuration.terraform_execution_mode = terraform_execution_mode
+      example.run
+      RSpec.configuration.terraform_execution_mode = previous
+    end
+
+    it 'throws if no configuration_directory is provided' do
+      stub_ruby_terraform_init
+      stub_ruby_terraform_apply
+
+      helper = described_class.new
+
+      expect { helper.execute }
+        .to(raise_error(
+              StandardError,
+              'Required parameter: `:configuration_directory` missing.'
+            ))
+    end
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'does not delete and recreate the configuration directory ' \
+       'before invoking Terraform' do
+      stub_ruby_terraform_init
+      stub_ruby_terraform_apply
+
+      helper = described_class.new(
+        required_parameters(execution_mode: :in_place)
+      )
+      helper.execute
+
+      expect(FileUtils).not_to(have_received(:rm_rf))
+      expect(FileUtils).not_to(have_received(:mkdir_p))
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
+    describe 'for init' do
+      it 'inits the specified Terraform configuration in place' do
+        init = stub_ruby_terraform_init
+        stub_ruby_terraform_apply
+
+        helper = described_class.new(
+          configuration_directory: 'path/to/terraform/configuration'
+        )
+        helper.execute
+
+        expect(init)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/terraform/configuration'
+                      )))
+      end
+
+      it 'does not include the from_module parameter' do
+        init = stub_ruby_terraform_init
+        stub_ruby_terraform_apply
+
+        helper = described_class.new(
+          configuration_directory: 'path/to/terraform/configuration'
+        )
+        helper.execute
+
+        expect(init)
+          .not_to(have_received(:execute)
+                    .with(hash_including(:from_module)))
+      end
+    end
+
+    describe 'for apply' do
+      it 'applies the specified Terraform configuration in place' do
+        stub_ruby_terraform_init
+        apply = stub_ruby_terraform_apply
+
+        helper = described_class.new(
+          configuration_directory: 'path/to/terraform/configuration'
+        )
+        helper.execute
+
+        expect(apply)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/terraform/configuration'
+                      )))
+      end
+    end
+  end
+
+  context 'when Terraform execution mode is :isolated' do
+    def terraform_execution_mode
+      :isolated
+    end
+
+    around do |example|
+      previous = RSpec.configuration.terraform_execution_mode
+      RSpec.configuration.terraform_execution_mode = terraform_execution_mode
+      example.run
+      RSpec.configuration.terraform_execution_mode = previous
+    end
+
+    it 'throws if no configuration_directory is provided' do
+      stub_ruby_terraform_init
+      stub_ruby_terraform_apply
+
+      helper = described_class.new(
+        source_directory: 'path/to/source/configuration'
+      )
+
+      expect { helper.execute }
+        .to(raise_error(
+              StandardError,
+              'Required parameter: `:configuration_directory` missing.'
+            ))
+    end
+
+    it 'throws if no source_directory is provided' do
+      stub_ruby_terraform_init
+      stub_ruby_terraform_apply
+
+      helper = described_class.new(
+        configuration_directory: 'path/to/destination/configuration'
+      )
+
+      expect { helper.execute }
+        .to(raise_error(
+              StandardError,
+              'Required parameter: `:source_directory` missing.'
+            ))
+    end
+
+    it 'throws if no source_directory or configuration_directory provided' do
+      stub_ruby_terraform_init
+      stub_ruby_terraform_apply
+
+      helper = described_class.new
+
+      expect { helper.execute }
+        .to(raise_error(
+              StandardError,
+              'Required parameters: `:source_directory` and ' \
+              '`:configuration_directory` missing.'
+            ))
+    end
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'deletes and recreates the configuration directory ' \
+       'before invoking Terraform' do
+      init = stub_ruby_terraform_init
+      apply = stub_ruby_terraform_apply
+
+      helper = described_class.new(
+        required_parameters(execution_mode: :isolated)
+          .merge(configuration_directory: 'path/to/destination/configuration')
+      )
+      helper.execute
+
+      expect(FileUtils)
+        .to(have_received(:rm_rf)
+              .with('path/to/destination/configuration')
+              .ordered)
+      expect(FileUtils)
+        .to(have_received(:mkdir_p)
+              .with('path/to/destination/configuration')
+              .ordered)
+      expect(init).to(have_received(:execute).ordered)
+      expect(apply).to(have_received(:execute).ordered)
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
+    describe 'for init' do
+      it 'inits the destination Terraform configuration' do
+        init = stub_ruby_terraform_init
+        stub_ruby_terraform_apply
+
+        helper = described_class.new(
+          source_directory: 'path/to/source/configuration',
+          configuration_directory: 'path/to/destination/configuration'
+        )
+        helper.execute
+
+        expect(init)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/destination/configuration'
+                      )))
+      end
+
+      it 'uses the specified source Terraform configuration ' \
+         'as the from_module parameter' do
+        init = stub_ruby_terraform_init
+        stub_ruby_terraform_apply
+
+        helper = described_class.new(
+          source_directory: 'path/to/source/configuration',
+          configuration_directory: 'path/to/destination/configuration'
+        )
+        helper.execute
+
+        expect(init)
+          .to(have_received(:execute)
+                    .with(hash_including(
+                            from_module: 'path/to/source/configuration'
+                          )))
+      end
+    end
+
+    describe 'for apply' do
+      it 'applies the destination Terraform configuration' do
+        stub_ruby_terraform_init
+        apply = stub_ruby_terraform_apply
+
+        helper = described_class.new(
+          source_directory: 'path/to/source/configuration',
+          configuration_directory: 'path/to/destination/configuration'
+        )
+        helper.execute
+
+        expect(apply)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/destination/configuration'
+                      )))
       end
     end
   end
@@ -527,8 +795,12 @@ describe RSpec::Terraform::Helpers::Apply do
     end
   end
 
-  def required_parameters
-    { configuration_directory: 'path/to/configuration' }
+  def required_parameters(execution_mode: :in_place)
+    {
+      in_place: { configuration_directory: 'path/to/configuration' },
+      isolated: { source_directory: 'path/to/source/configuration',
+                  configuration_directory: 'path/to/destination/configuration' }
+    }[execution_mode] || {}
   end
 
   def stub_ruby_terraform_init(opts = nil)
@@ -553,5 +825,13 @@ describe RSpec::Terraform::Helpers::Apply do
     allow(RubyTerraform::Commands::Apply).to(expectation)
 
     apply
+  end
+
+  def stub_rm_rf
+    allow(FileUtils).to(receive(:rm_rf))
+  end
+
+  def stub_mkdir_p
+    allow(FileUtils).to(receive(:mkdir_p))
   end
 end

@@ -8,12 +8,16 @@ module RSpec
   module Terraform
     module Helpers
       class Apply
-        attr_reader(:overrides, :configuration_provider)
+        attr_reader(
+          :overrides, :configuration_provider, :binary, :execution_mode
+        )
 
         def initialize(overrides = {}, configuration_provider = nil)
           @overrides = overrides
           @configuration_provider =
             configuration_provider || Configuration.identity_provider
+          @binary = RSpec.configuration.terraform_binary
+          @execution_mode = RSpec.configuration.terraform_execution_mode
         end
 
         def execute(&block)
@@ -23,6 +27,7 @@ module RSpec
 
           ensure_required_parameters(parameters)
 
+          clean(parameters)
           init(parameters)
           apply(parameters)
         end
@@ -48,19 +53,54 @@ module RSpec
           )
         end
 
-        def ensure_required_parameters(parameters)
-          return if parameters[:configuration_directory]
+        def required_parameters(execution_mode)
+          {
+            in_place: [:configuration_directory],
+            isolated: %i[source_directory configuration_directory]
+          }[execution_mode] || []
+        end
 
-          throw StandardError.new(
-            'No Terraform configuration directory specified.'
-          )
+        def ensure_required_parameters(parameters)
+          missing_parameters =
+            required_parameters(execution_mode)
+              .filter { |parameter| parameters[parameter].nil? }
+
+          return if missing_parameters.empty?
+
+          raise_missing_parameters(missing_parameters)
+        end
+
+        def raise_missing_parameters(parameters)
+          parameters = parameters.collect { |parameter| "`:#{parameter}`" }
+          if parameters.count == 1
+            raise StandardError,
+                  "Required parameter: #{parameters[0]} missing."
+          else
+            parameters = "#{parameters[..-2].join(', ')} and #{parameters[-1]}"
+            raise StandardError,
+                  "Required parameters: #{parameters} missing."
+          end
+        end
+
+        def clean(parameters)
+          return unless execution_mode == :isolated
+
+          FileUtils.rm_rf(parameters[:configuration_directory])
+          FileUtils.mkdir_p(parameters[:configuration_directory])
         end
 
         def init(parameters)
-          init_command.execute(
+          execution_parameters = {
             chdir: parameters[:configuration_directory],
             input: parameters[:input]
-          )
+          }
+          if execution_mode == :isolated
+            execution_parameters =
+              execution_parameters
+                .merge(from_module: parameters[:source_directory])
+          end
+
+          init_command.execute(execution_parameters)
         end
 
         def apply(parameters)
@@ -74,15 +114,11 @@ module RSpec
         end
 
         def init_command
-          RubyTerraform::Commands::Init.new(
-            binary: RSpec.configuration.terraform_binary
-          )
+          RubyTerraform::Commands::Init.new(binary: binary)
         end
 
         def apply_command
-          RubyTerraform::Commands::Apply.new(
-            binary: RSpec.configuration.terraform_binary
-          )
+          RubyTerraform::Commands::Apply.new(binary: binary)
         end
       end
     end
