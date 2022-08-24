@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
 require 'ruby_terraform'
+require 'securerandom'
+require 'stringio'
 
 require_relative '../configuration/var_captor'
 
 module RSpec
   module Terraform
     module Helpers
-      class Apply
+      # rubocop:disable Metrics/ClassLength
+      class Plan
         attr_reader(
           :overrides, :configuration_provider, :binary, :execution_mode
         )
@@ -23,13 +26,17 @@ module RSpec
         def execute(&block)
           parameters = with_configuration_provider_parameters(overrides)
           parameters = with_resolved_vars(parameters, &block)
-          parameters = with_mandatory_parameters(parameters)
 
           ensure_required_parameters(parameters)
 
           clean(parameters)
           init(parameters)
-          apply(parameters)
+          plan_file = plan(parameters)
+          plan_contents = show(parameters, plan_file)
+
+          RubyTerraform::Models::Plan.new(
+            JSON.parse(plan_contents, symbolize_names: true)
+          )
         end
 
         private
@@ -44,13 +51,6 @@ module RSpec
           var_captor = Configuration::VarCaptor.new(parameters[:vars] || {})
           block.call(var_captor)
           parameters.merge(vars: var_captor.to_h)
-        end
-
-        def with_mandatory_parameters(parameters)
-          parameters.merge(
-            input: false,
-            auto_approve: true
-          )
         end
 
         def required_parameters(execution_mode)
@@ -93,16 +93,29 @@ module RSpec
           init_command.execute(init_parameters(parameters))
         end
 
-        def apply(parameters)
-          apply_command.execute(apply_parameters(parameters))
+        def plan(parameters)
+          plan_parameters = plan_parameters(parameters)
+          plan_command.execute(plan_parameters)
+          plan_parameters[:out]
+        end
+
+        def show(parameters, plan_file)
+          stdout = StringIO.new
+          show_command(stdout: stdout)
+            .execute(show_parameters(parameters, plan_file))
+          stdout.string
         end
 
         def init_command
           RubyTerraform::Commands::Init.new(binary: binary)
         end
 
-        def apply_command
-          RubyTerraform::Commands::Apply.new(binary: binary)
+        def plan_command
+          RubyTerraform::Commands::Plan.new(binary: binary)
+        end
+
+        def show_command(opts = {})
+          RubyTerraform::Commands::Show.new(opts.merge(binary: binary))
         end
 
         def init_parameters(parameters)
@@ -119,23 +132,33 @@ module RSpec
         end
 
         # rubocop:disable Metrics/MethodLength
-        def apply_parameters(parameters)
-          apply_parameters =
+        def plan_parameters(parameters)
+          plan_parameters =
             parameters.merge(
               chdir: parameters[:configuration_directory],
-              input: false,
-              auto_approve: true
+              out: parameters[:plan_file_name] || SecureRandom.hex(10),
+              input: false
             )
 
           if parameters[:state_file]
-            apply_parameters =
-              apply_parameters.merge(state: parameters[:state_file])
+            plan_parameters =
+              plan_parameters.merge(state: parameters[:state_file])
           end
 
-          apply_parameters
+          plan_parameters
         end
         # rubocop:enable Metrics/MethodLength
+
+        def show_parameters(parameters, plan_file)
+          parameters.merge(
+            chdir: parameters[:configuration_directory],
+            path: plan_file,
+            no_color: true,
+            json: true
+          )
+        end
       end
+      # rubocop:enable Metrics/ClassLength
     end
   end
 end

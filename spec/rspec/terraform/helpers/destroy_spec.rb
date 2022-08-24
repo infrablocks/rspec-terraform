@@ -139,7 +139,7 @@ describe RSpec::Terraform::Helpers::Destroy do
 
         expect(destroy)
           .not_to(have_received(:execute)
-                    .with(hash_including(:state_file)))
+                    .with(hash_including(:state)))
       end
 
       it 'destroys the specified Terraform configuration in place' do

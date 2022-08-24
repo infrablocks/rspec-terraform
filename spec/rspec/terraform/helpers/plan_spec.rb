@@ -3,29 +3,51 @@
 require 'spec_helper'
 require 'fileutils'
 
-describe RSpec::Terraform::Helpers::Apply do
+describe RSpec::Terraform::Helpers::Plan do
   before do
     stub_rm_rf
     stub_mkdir_p
   end
 
   # rubocop:disable RSpec/MultipleExpectations
-  it 'invokes init before apply' do
+  it 'invokes init before plan before show' do
     init = stub_ruby_terraform_init
-    apply = stub_ruby_terraform_apply
+    plan = stub_ruby_terraform_plan
+    show = stub_ruby_terraform_show
 
     helper = described_class.new(required_parameters)
     helper.execute
 
     expect(init).to(have_received(:execute).ordered)
-    expect(apply).to(have_received(:execute).ordered)
+    expect(plan).to(have_received(:execute).ordered)
+    expect(show).to(have_received(:execute).ordered)
   end
   # rubocop:enable RSpec/MultipleExpectations
+
+  it 'returns the plan contents as a RubyTerraform::Models::Plan' do
+    stub_ruby_terraform_init
+    stub_ruby_terraform_plan
+    show_command = stub_ruby_terraform_show
+
+    plan_content = Support::Build.plan_content
+
+    opts = nil
+    allow(RubyTerraform::Commands::Show)
+      .to(receive(:new) { |o| opts = o }.and_return(show_command))
+    allow(show_command)
+      .to(receive(:execute) { opts[:stdout].write(JSON.dump(plan_content)) })
+
+    helper = described_class.new(required_parameters)
+    plan = helper.execute
+
+    expect(plan).to(eq(RubyTerraform::Models::Plan.new(plan_content)))
+  end
 
   describe 'by default' do
     it 'throws if no configuration_directory is provided' do
       stub_ruby_terraform_init
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new
 
@@ -40,7 +62,8 @@ describe RSpec::Terraform::Helpers::Apply do
     it 'does not delete and recreate the configuration directory ' \
        'before invoking Terraform' do
       stub_ruby_terraform_init
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(required_parameters)
       helper.execute
@@ -53,7 +76,8 @@ describe RSpec::Terraform::Helpers::Apply do
     describe 'for init' do
       it 'instructs Terraform not to request interactive input' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(required_parameters)
         helper.execute
@@ -65,7 +89,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'inits the specified Terraform configuration in place' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
@@ -81,7 +106,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'does not include the from_module parameter' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
@@ -95,7 +121,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'uses a Terraform binary of "terraform"' do
         init = stub_ruby_terraform_init(binary: 'terraform')
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(required_parameters)
         helper.execute
@@ -105,53 +132,72 @@ describe RSpec::Terraform::Helpers::Apply do
       end
     end
 
-    describe 'for apply' do
+    describe 'for plan' do
       it 'instructs Terraform not to request interactive input' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(required_parameters)
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(input: false)))
       end
 
-      it 'instructs Terraform to auto approve the plan' do
+      it 'specifies a plan file' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(required_parameters)
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
-                .with(hash_including(auto_approve: true)))
+                    .with(hash_including(:out)))
+      end
+
+      it 'randomises the plan file' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
+
+        plan_files = []
+        allow(plan)
+          .to(receive(:execute) { |params| plan_files << params[:out] })
+
+        helper = described_class.new(required_parameters)
+        10.times { helper.execute }
+
+        expect(plan_files.uniq.length).to(eq(10))
       end
 
       it 'does not specify a state file' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(required_parameters)
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .not_to(have_received(:execute)
                     .with(hash_including(:state)))
       end
 
-      it 'applies the specified Terraform configuration in place' do
+      it 'plans the specified Terraform configuration in place' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         chdir: 'path/to/terraform/configuration'
@@ -160,12 +206,87 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'uses a Terraform binary of "terraform"' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply(binary: 'terraform')
+        plan = stub_ruby_terraform_plan(binary: 'terraform')
+        stub_ruby_terraform_show
 
         helper = described_class.new(required_parameters)
         helper.execute
 
-        expect(apply)
+        expect(plan)
+          .to(have_received(:execute))
+      end
+    end
+
+    describe 'for show' do
+      it 'instructs Terraform not to print output in colour' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        helper = described_class.new(required_parameters)
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(no_color: true)))
+      end
+
+      it 'instructs Terraform to output JSON' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        helper = described_class.new(required_parameters)
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(json: true)))
+      end
+
+      it 'uses the plan file produced by plan' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        plan_file = nil
+        allow(plan)
+          .to(receive(:execute) { |params| plan_file = params[:out] })
+
+        helper = described_class.new(required_parameters)
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(path: plan_file)))
+      end
+
+      it 'shows the specified Terraform plan file in place' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        helper = described_class.new(
+          configuration_directory: 'path/to/terraform/configuration'
+        )
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/terraform/configuration'
+                      )))
+      end
+
+      it 'uses a Terraform binary of "terraform"' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show(binary: 'terraform')
+
+        helper = described_class.new(required_parameters)
+        helper.execute
+
+        expect(show)
           .to(have_received(:execute))
       end
     end
@@ -185,7 +306,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'throws if no configuration_directory is provided' do
       stub_ruby_terraform_init
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new
 
@@ -200,7 +322,8 @@ describe RSpec::Terraform::Helpers::Apply do
     it 'does not delete and recreate the configuration directory ' \
        'before invoking Terraform' do
       stub_ruby_terraform_init
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(
         required_parameters(execution_mode: :in_place)
@@ -215,7 +338,8 @@ describe RSpec::Terraform::Helpers::Apply do
     describe 'for init' do
       it 'inits the specified Terraform configuration in place' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
@@ -231,7 +355,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'does not include the from_module parameter' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
@@ -244,17 +369,37 @@ describe RSpec::Terraform::Helpers::Apply do
       end
     end
 
-    describe 'for apply' do
-      it 'applies the specified Terraform configuration in place' do
+    describe 'for plan' do
+      it 'plans the specified Terraform configuration in place' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/terraform/configuration'
+                      )))
+      end
+    end
+
+    describe 'for show' do
+      it 'shows the specified Terraform plan file in place' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        helper = described_class.new(
+          configuration_directory: 'path/to/terraform/configuration'
+        )
+        helper.execute
+
+        expect(show)
           .to(have_received(:execute)
                 .with(hash_including(
                         chdir: 'path/to/terraform/configuration'
@@ -277,7 +422,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'throws if no configuration_directory is provided' do
       stub_ruby_terraform_init
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(
         source_directory: 'path/to/source/configuration'
@@ -292,7 +438,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'throws if no source_directory is provided' do
       stub_ruby_terraform_init
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(
         configuration_directory: 'path/to/destination/configuration'
@@ -307,7 +454,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'throws if no source_directory or configuration_directory provided' do
       stub_ruby_terraform_init
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new
 
@@ -323,7 +471,8 @@ describe RSpec::Terraform::Helpers::Apply do
     it 'deletes and recreates the configuration directory ' \
        'before invoking Terraform' do
       init = stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply
+      plan = stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show
 
       helper = described_class.new(
         required_parameters(execution_mode: :isolated)
@@ -340,14 +489,16 @@ describe RSpec::Terraform::Helpers::Apply do
               .with('path/to/destination/configuration')
               .ordered)
       expect(init).to(have_received(:execute).ordered)
-      expect(apply).to(have_received(:execute).ordered)
+      expect(plan).to(have_received(:execute).ordered)
+      expect(show).to(have_received(:execute).ordered)
     end
     # rubocop:enable RSpec/MultipleExpectations
 
     describe 'for init' do
       it 'inits the destination Terraform configuration' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           source_directory: 'path/to/source/configuration',
@@ -365,7 +516,8 @@ describe RSpec::Terraform::Helpers::Apply do
       it 'uses the specified source Terraform configuration ' \
          'as the from_module parameter' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           source_directory: 'path/to/source/configuration',
@@ -375,16 +527,17 @@ describe RSpec::Terraform::Helpers::Apply do
 
         expect(init)
           .to(have_received(:execute)
-                    .with(hash_including(
-                            from_module: 'path/to/source/configuration'
-                          )))
+                .with(hash_including(
+                        from_module: 'path/to/source/configuration'
+                      )))
       end
     end
 
-    describe 'for apply' do
-      it 'applies the destination Terraform configuration' do
+    describe 'for plan' do
+      it 'plans the destination Terraform configuration' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           source_directory: 'path/to/source/configuration',
@@ -392,7 +545,27 @@ describe RSpec::Terraform::Helpers::Apply do
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/destination/configuration'
+                      )))
+      end
+    end
+
+    describe 'for show' do
+      it 'shows the plan file in the destination Terraform configuration' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        helper = described_class.new(
+          source_directory: 'path/to/source/configuration',
+          configuration_directory: 'path/to/destination/configuration'
+        )
+        helper.execute
+
+        expect(show)
           .to(have_received(:execute)
                 .with(hash_including(
                         chdir: 'path/to/destination/configuration'
@@ -415,7 +588,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'inits using the specified binary' do
       init = stub_ruby_terraform_init(binary: terraform_binary)
-      stub_ruby_terraform_apply
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(required_parameters)
       helper.execute
@@ -424,14 +598,27 @@ describe RSpec::Terraform::Helpers::Apply do
         .to(have_received(:execute))
     end
 
-    it 'applies using the specified binary' do
+    it 'plans using the specified binary' do
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply(binary: terraform_binary)
+      plan = stub_ruby_terraform_plan(binary: terraform_binary)
+      stub_ruby_terraform_show
 
       helper = described_class.new(required_parameters)
       helper.execute
 
-      expect(apply)
+      expect(plan)
+        .to(have_received(:execute))
+    end
+
+    it 'shows using the specified binary' do
+      stub_ruby_terraform_init
+      stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show(binary: terraform_binary)
+
+      helper = described_class.new(required_parameters)
+      helper.execute
+
+      expect(show)
         .to(have_received(:execute))
     end
   end
@@ -440,7 +627,8 @@ describe RSpec::Terraform::Helpers::Apply do
     describe 'for init' do
       it 'uses the specified Terraform configuration' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
@@ -455,17 +643,18 @@ describe RSpec::Terraform::Helpers::Apply do
       end
     end
 
-    describe 'for apply' do
+    describe 'for plan' do
       it 'uses the specified Terraform configuration' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           configuration_directory: 'path/to/terraform/configuration'
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         chdir: 'path/to/terraform/configuration'
@@ -474,7 +663,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'uses the specified state file' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           required_parameters.merge(
@@ -483,16 +673,36 @@ describe RSpec::Terraform::Helpers::Apply do
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         state: 'path/to/terraform/state'
                       )))
       end
 
+      it 'uses the specified plan file name' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
+
+        helper = described_class.new(
+          required_parameters.merge(
+            plan_file_name: 'the-plan-file'
+          )
+        )
+        helper.execute
+
+        expect(plan)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        out: 'the-plan-file'
+                      )))
+      end
+
       it 'uses the specified vars' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         helper = described_class.new(
           required_parameters.merge(
@@ -504,7 +714,7 @@ describe RSpec::Terraform::Helpers::Apply do
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         vars: {
@@ -514,13 +724,52 @@ describe RSpec::Terraform::Helpers::Apply do
                       )))
       end
     end
+
+    describe 'for show' do
+      it 'uses the specified Terraform configuration' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        helper = described_class.new(
+          configuration_directory: 'path/to/terraform/configuration'
+        )
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'path/to/terraform/configuration'
+                      )))
+      end
+
+      it 'uses the specified plan file name' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        helper = described_class.new(
+          required_parameters.merge(
+            plan_file_name: 'the-plan-file'
+          )
+        )
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        path: 'the-plan-file'
+                      )))
+      end
+    end
   end
 
   context 'when configuration provider supplied' do
     describe 'for init' do
       it 'uses the Terraform configuration returned by the provider' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         configuration_provider =
           RSpec::Terraform::Configuration.in_memory_provider(
@@ -541,7 +790,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'passes configuration overrides to the provider when present' do
         init = stub_ruby_terraform_init
-        stub_ruby_terraform_apply
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         in_memory_configuration = {
           configuration_directory: 'provided/terraform/configuration'
@@ -567,10 +817,11 @@ describe RSpec::Terraform::Helpers::Apply do
       end
     end
 
-    describe 'for apply' do
+    describe 'for plan' do
       it 'uses the Terraform configuration returned by the provider' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         configuration_provider =
           RSpec::Terraform::Configuration.in_memory_provider(
@@ -582,7 +833,7 @@ describe RSpec::Terraform::Helpers::Apply do
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         chdir: 'provided/terraform/configuration'
@@ -591,7 +842,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'uses the state file returned by the provider' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         configuration_provider =
           RSpec::Terraform::Configuration.in_memory_provider(
@@ -605,16 +857,41 @@ describe RSpec::Terraform::Helpers::Apply do
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         state: 'provided/terraform/state'
                       )))
       end
 
+      it 'uses the plan file name returned by the provider' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
+
+        configuration_provider =
+          RSpec::Terraform::Configuration.in_memory_provider(
+            required_parameters.merge(
+              plan_file_name: 'the-plan-file'
+            )
+          )
+
+        helper = described_class.new(
+          {}, configuration_provider
+        )
+        helper.execute
+
+        expect(plan)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        out: 'the-plan-file'
+                      )))
+      end
+
       it 'uses the vars returned by the provider' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         configuration_provider =
           RSpec::Terraform::Configuration.in_memory_provider(
@@ -631,7 +908,7 @@ describe RSpec::Terraform::Helpers::Apply do
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         vars: {
@@ -643,23 +920,20 @@ describe RSpec::Terraform::Helpers::Apply do
 
       it 'passes configuration overrides to the provider when present' do
         stub_ruby_terraform_init
-        apply = stub_ruby_terraform_apply
+        plan = stub_ruby_terraform_plan
+        stub_ruby_terraform_show
 
         in_memory_configuration = {
           configuration_directory: 'provided/terraform/configuration',
           state_file: 'provided/state/file',
-          vars: {
-            first: 1,
-            second: 2
-          }
+          plan_file_name: 'provided-plan-file',
+          vars: { first: 1, second: 2 }
         }
         override_configuration = {
           configuration_directory: 'override/terraform/configuration',
           state_file: 'override/state/file',
-          vars: {
-            second: 'two',
-            third: 'three'
-          }
+          plan_file_name: 'override-plan-file',
+          vars: { second: 'two', third: 'three' }
         }
         configuration_provider =
           RSpec::Terraform::Configuration.in_memory_provider(
@@ -671,25 +945,102 @@ describe RSpec::Terraform::Helpers::Apply do
         )
         helper.execute
 
-        expect(apply)
+        expect(plan)
           .to(have_received(:execute)
                 .with(hash_including(
                         chdir: 'override/terraform/configuration',
                         state: 'override/state/file',
-                        vars: {
-                          first: 1,
-                          second: 'two',
-                          third: 'three'
-                        }
+                        out: 'override-plan-file',
+                        vars: { first: 1, second: 'two', third: 'three' }
+                      )))
+      end
+    end
+
+    describe 'for show' do
+      it 'uses the Terraform configuration returned by the provider' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        configuration_provider =
+          RSpec::Terraform::Configuration.in_memory_provider(
+            configuration_directory: 'provided/terraform/configuration'
+          )
+
+        helper = described_class.new(
+          {}, configuration_provider
+        )
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'provided/terraform/configuration'
+                      )))
+      end
+
+      it 'uses the plan file name returned by the provider' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        configuration_provider =
+          RSpec::Terraform::Configuration.in_memory_provider(
+            required_parameters.merge(
+              plan_file_name: 'the-plan-file'
+            )
+          )
+
+        helper = described_class.new(
+          {}, configuration_provider
+        )
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        path: 'the-plan-file'
+                      )))
+      end
+
+      it 'passes configuration overrides to the provider when present' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show
+
+        in_memory_configuration = {
+          configuration_directory: 'provided/terraform/configuration',
+          plan_file_name: 'provided-plan-file'
+        }
+        override_configuration = {
+          configuration_directory: 'override/terraform/configuration',
+          plan_file_name: 'override-plan-file'
+        }
+        configuration_provider =
+          RSpec::Terraform::Configuration.in_memory_provider(
+            in_memory_configuration
+          )
+
+        helper = described_class.new(
+          override_configuration, configuration_provider
+        )
+        helper.execute
+
+        expect(show)
+          .to(have_received(:execute)
+                .with(hash_including(
+                        chdir: 'override/terraform/configuration',
+                        path: 'override-plan-file'
                       )))
       end
     end
   end
 
   context 'when vars block passed' do
-    it 'passes the vars configured in the block to apply' do
+    it 'passes the vars configured in the block to plan' do
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply
+      plan = stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(required_parameters)
       helper.execute do |vars|
@@ -697,7 +1048,7 @@ describe RSpec::Terraform::Helpers::Apply do
         vars.second = 2
       end
 
-      expect(apply)
+      expect(plan)
         .to(have_received(:execute)
               .with(hash_including(
                       vars: {
@@ -709,7 +1060,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'exposes existing vars within block' do
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply
+      plan = stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(
         required_parameters.merge(
@@ -723,7 +1075,7 @@ describe RSpec::Terraform::Helpers::Apply do
         vars.third = vars.first + vars.second
       end
 
-      expect(apply)
+      expect(plan)
         .to(have_received(:execute)
               .with(hash_including(
                       vars: {
@@ -736,7 +1088,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'gives precedence to the vars in the block over those in overrides' do
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply
+      plan = stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       helper = described_class.new(
         required_parameters.merge(
@@ -751,7 +1104,7 @@ describe RSpec::Terraform::Helpers::Apply do
         vars.third = 'three'
       end
 
-      expect(apply)
+      expect(plan)
         .to(have_received(:execute)
               .with(hash_including(
                       vars: {
@@ -764,7 +1117,8 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'gives precedence to the vars from a provider over those in overrides' do
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply
+      plan = stub_ruby_terraform_plan
+      stub_ruby_terraform_show
 
       configuration_provider =
         RSpec::Terraform::Configuration.in_memory_provider(
@@ -783,7 +1137,7 @@ describe RSpec::Terraform::Helpers::Apply do
         vars.third = 'three'
       end
 
-      expect(apply)
+      expect(plan)
         .to(have_received(:execute)
               .with(hash_including(
                       vars: {
@@ -815,16 +1169,30 @@ describe RSpec::Terraform::Helpers::Apply do
     init
   end
 
-  def stub_ruby_terraform_apply(opts = nil)
-    apply = instance_double(RubyTerraform::Commands::Apply)
-    allow(apply).to(receive(:execute))
+  def stub_ruby_terraform_plan(opts = nil)
+    plan = instance_double(RubyTerraform::Commands::Plan)
+    allow(plan).to(receive(:execute))
 
     expectation = receive(:new)
     expectation = expectation.with(opts) if opts
-    expectation = expectation.and_return(apply)
-    allow(RubyTerraform::Commands::Apply).to(expectation)
+    expectation = expectation.and_return(plan)
+    allow(RubyTerraform::Commands::Plan).to(expectation)
 
-    apply
+    plan
+  end
+
+  def stub_ruby_terraform_show(opts = nil)
+    show = instance_double(RubyTerraform::Commands::Show)
+
+    stdout = nil
+    expectation = receive(:new) { |o| stdout = o[:stdout] }
+    expectation = expectation.with(hash_including(opts)) if opts
+    expectation = expectation.and_return(show)
+    allow(RubyTerraform::Commands::Show).to(expectation)
+
+    allow(show).to(receive(:execute) { stdout&.write('{}') })
+
+    show
   end
 
   def stub_rm_rf

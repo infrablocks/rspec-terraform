@@ -23,7 +23,6 @@ module RSpec
         def execute(&block)
           parameters = with_configuration_provider_parameters(overrides)
           parameters = with_resolved_vars(parameters, &block)
-          parameters = with_mandatory_parameters(parameters)
 
           ensure_required_parameters(parameters)
 
@@ -44,13 +43,6 @@ module RSpec
           var_captor = Configuration::VarCaptor.new(parameters[:vars] || {})
           block.call(var_captor)
           parameters.merge(vars: var_captor.to_h)
-        end
-
-        def with_mandatory_parameters(parameters)
-          parameters.merge(
-            input: false,
-            auto_approve: true
-          )
         end
 
         def required_parameters(execution_mode)
@@ -90,27 +82,11 @@ module RSpec
         end
 
         def init(parameters)
-          execution_parameters = {
-            chdir: parameters[:configuration_directory],
-            input: parameters[:input]
-          }
-          if execution_mode == :isolated
-            execution_parameters =
-              execution_parameters
-                .merge(from_module: parameters[:source_directory])
-          end
-
-          init_command.execute(execution_parameters)
+          init_command.execute(init_parameters(parameters))
         end
 
         def destroy(parameters)
-          destroy_command.execute(
-            chdir: parameters[:configuration_directory],
-            state: parameters[:state_file],
-            vars: parameters[:vars],
-            input: parameters[:input],
-            auto_approve: parameters[:auto_approve]
-          )
+          destroy_command.execute(destroy_parameters(parameters))
         end
 
         def init_command
@@ -120,6 +96,38 @@ module RSpec
         def destroy_command
           RubyTerraform::Commands::Destroy.new(binary: binary)
         end
+
+        def init_parameters(parameters)
+          init_parameters =
+            parameters.merge(
+              chdir: parameters[:configuration_directory],
+              input: false
+            )
+          if execution_mode == :isolated
+            init_parameters =
+              init_parameters.merge(from_module: parameters[:source_directory])
+          end
+
+          init_parameters
+        end
+
+        # rubocop:disable Metrics/MethodLength
+        def destroy_parameters(parameters)
+          destroy_parameters =
+            parameters.merge(
+              chdir: parameters[:configuration_directory],
+              input: false,
+              auto_approve: true
+            )
+
+          if parameters[:state_file]
+            destroy_parameters =
+              destroy_parameters.merge(state: parameters[:state_file])
+          end
+
+          destroy_parameters
+        end
+        # rubocop:enable Metrics/MethodLength
       end
     end
   end
