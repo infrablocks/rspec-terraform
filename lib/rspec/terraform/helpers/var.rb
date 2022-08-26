@@ -6,15 +6,14 @@ module RSpec
   module Terraform
     module Helpers
       class Var
-        attr_reader(:overrides, :configuration_provider)
+        attr_reader(:configuration_provider)
 
-        def initialize(overrides = {}, configuration_provider = nil)
-          @overrides = overrides
+        def initialize(opts = {})
           @configuration_provider =
-            configuration_provider || Configuration.identity_provider
+            opts[:configuration_provider] || Configuration.identity_provider
         end
 
-        def execute(&block)
+        def execute(overrides = {}, &block)
           parameters = with_configuration_provider_parameters(overrides)
           parameters = with_resolved_vars(parameters, &block)
 

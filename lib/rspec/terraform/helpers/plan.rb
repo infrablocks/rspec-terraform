@@ -12,18 +12,17 @@ module RSpec
       # rubocop:disable Metrics/ClassLength
       class Plan
         attr_reader(
-          :overrides, :configuration_provider, :binary, :execution_mode
+          :configuration_provider, :binary, :execution_mode
         )
 
-        def initialize(overrides = {}, configuration_provider = nil)
-          @overrides = overrides
+        def initialize(opts = {})
           @configuration_provider =
-            configuration_provider || Configuration.identity_provider
+            opts[:configuration_provider] || Configuration.identity_provider
           @binary = RSpec.configuration.terraform_binary
           @execution_mode = RSpec.configuration.terraform_execution_mode
         end
 
-        def execute(&block)
+        def execute(overrides = {}, &block)
           parameters = with_configuration_provider_parameters(overrides)
           parameters = with_resolved_vars(parameters, &block)
 

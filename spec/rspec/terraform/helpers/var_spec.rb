@@ -12,8 +12,8 @@ describe RSpec::Terraform::Helpers::Var do
         },
         name: 'first'
       }
-      helper = described_class.new(overrides)
-      result = helper.execute
+      helper = described_class.new
+      result = helper.execute(overrides)
 
       expect(result).to(eq(1))
     end
@@ -26,8 +26,8 @@ describe RSpec::Terraform::Helpers::Var do
         },
         name: 'third'
       }
-      helper = described_class.new(overrides)
-      result = helper.execute
+      helper = described_class.new
+      result = helper.execute(overrides)
 
       expect(result).to(be_nil)
     end
@@ -45,7 +45,7 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        {}, configuration_provider
+        configuration_provider: configuration_provider
       )
       result = helper.execute
 
@@ -63,7 +63,7 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        {}, configuration_provider
+        configuration_provider: configuration_provider
       )
       result = helper.execute
 
@@ -91,9 +91,9 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        override_configuration, configuration_provider
+        configuration_provider: configuration_provider
       )
-      result = helper.execute
+      result = helper.execute(override_configuration)
 
       expect(result).to(eq('two'))
     end
@@ -101,8 +101,8 @@ describe RSpec::Terraform::Helpers::Var do
 
   context 'when vars block passed' do
     it 'looks up the var by name in the vars configured in the block' do
-      helper = described_class.new(name: 'second')
-      result = helper.execute do |vars|
+      helper = described_class.new
+      result = helper.execute(name: 'second') do |vars|
         vars.first = 1
         vars.second = 2
       end
@@ -111,14 +111,14 @@ describe RSpec::Terraform::Helpers::Var do
     end
 
     it 'exposes existing vars within block' do
-      helper = described_class.new(
+      helper = described_class.new
+      result = helper.execute(
         vars: {
           first: 1,
           second: 2
         },
         name: 'third'
-      )
-      result = helper.execute do |vars|
+      ) do |vars|
         vars.third = vars.first + vars.second
       end
 
@@ -126,14 +126,14 @@ describe RSpec::Terraform::Helpers::Var do
     end
 
     it 'gives precedence to the vars in the block over those in overrides' do
-      helper = described_class.new(
+      helper = described_class.new
+      result = helper.execute(
         vars: {
           first: 1,
           second: 2
         },
         name: 'second'
-      )
-      result = helper.execute do |vars|
+      ) do |vars|
         vars.second = 'two'
         vars.third = 'three'
       end
@@ -152,7 +152,7 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        {}, configuration_provider
+        configuration_provider: configuration_provider
       )
       result = helper.execute do |vars|
         vars.second = 'two'

@@ -15,8 +15,8 @@ describe RSpec::Terraform::Helpers::Plan do
     plan = stub_ruby_terraform_plan
     show = stub_ruby_terraform_show
 
-    helper = described_class.new(required_parameters)
-    helper.execute
+    helper = described_class.new
+    helper.execute(required_parameters)
 
     expect(init).to(have_received(:execute).ordered)
     expect(plan).to(have_received(:execute).ordered)
@@ -37,8 +37,8 @@ describe RSpec::Terraform::Helpers::Plan do
     allow(show_command)
       .to(receive(:execute) { opts[:stdout].write(JSON.dump(plan_content)) })
 
-    helper = described_class.new(required_parameters)
-    plan = helper.execute
+    helper = described_class.new
+    plan = helper.execute(required_parameters)
 
     expect(plan).to(eq(RubyTerraform::Models::Plan.new(plan_content)))
   end
@@ -65,8 +65,8 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(required_parameters)
-      helper.execute
+      helper = described_class.new
+      helper.execute(required_parameters)
 
       expect(FileUtils).not_to(have_received(:rm_rf))
       expect(FileUtils).not_to(have_received(:mkdir_p))
@@ -79,8 +79,8 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(init)
           .to(have_received(:execute)
@@ -92,10 +92,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(init)
           .to(have_received(:execute)
@@ -109,10 +109,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(init)
           .not_to(have_received(:execute)
@@ -124,8 +124,8 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(init)
           .to(have_received(:execute))
@@ -138,8 +138,8 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(plan)
           .to(have_received(:execute)
@@ -151,8 +151,8 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(plan)
           .to(have_received(:execute)
@@ -168,8 +168,8 @@ describe RSpec::Terraform::Helpers::Plan do
         allow(plan)
           .to(receive(:execute) { |params| plan_files << params[:out] })
 
-        helper = described_class.new(required_parameters)
-        10.times { helper.execute }
+        helper = described_class.new
+        10.times { helper.execute(required_parameters) }
 
         expect(plan_files.uniq.length).to(eq(10))
       end
@@ -179,8 +179,8 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(plan)
           .not_to(have_received(:execute)
@@ -192,10 +192,10 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(plan)
           .to(have_received(:execute)
@@ -209,8 +209,8 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan(binary: 'terraform')
         stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(plan)
           .to(have_received(:execute))
@@ -223,8 +223,8 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(show)
           .to(have_received(:execute)
@@ -236,8 +236,8 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(show)
           .to(have_received(:execute)
@@ -253,8 +253,8 @@ describe RSpec::Terraform::Helpers::Plan do
         allow(plan)
           .to(receive(:execute) { |params| plan_file = params[:out] })
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(show)
           .to(have_received(:execute)
@@ -266,10 +266,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(show)
           .to(have_received(:execute)
@@ -283,8 +283,8 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show(binary: 'terraform')
 
-        helper = described_class.new(required_parameters)
-        helper.execute
+        helper = described_class.new
+        helper.execute(required_parameters)
 
         expect(show)
           .to(have_received(:execute))
@@ -325,10 +325,10 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(
+      helper = described_class.new
+      helper.execute(
         required_parameters(execution_mode: :in_place)
       )
-      helper.execute
 
       expect(FileUtils).not_to(have_received(:rm_rf))
       expect(FileUtils).not_to(have_received(:mkdir_p))
@@ -341,10 +341,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(init)
           .to(have_received(:execute)
@@ -358,10 +358,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(init)
           .not_to(have_received(:execute)
@@ -375,10 +375,10 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(plan)
           .to(have_received(:execute)
@@ -394,10 +394,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(show)
           .to(have_received(:execute)
@@ -425,15 +425,16 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(
-        source_directory: 'path/to/source/configuration'
-      )
+      helper = described_class.new
 
-      expect { helper.execute }
-        .to(raise_error(
-              StandardError,
-              'Required parameter: `:configuration_directory` missing.'
-            ))
+      expect do
+        helper.execute(
+          source_directory: 'path/to/source/configuration'
+        )
+      end.to(raise_error(
+               StandardError,
+               'Required parameter: `:configuration_directory` missing.'
+             ))
     end
 
     it 'throws if no source_directory is provided' do
@@ -441,15 +442,16 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(
-        configuration_directory: 'path/to/destination/configuration'
-      )
+      helper = described_class.new
 
-      expect { helper.execute }
-        .to(raise_error(
-              StandardError,
-              'Required parameter: `:source_directory` missing.'
-            ))
+      expect do
+        helper.execute(
+          configuration_directory: 'path/to/destination/configuration'
+        )
+      end.to(raise_error(
+               StandardError,
+               'Required parameter: `:source_directory` missing.'
+             ))
     end
 
     it 'throws if no source_directory or configuration_directory provided' do
@@ -474,11 +476,11 @@ describe RSpec::Terraform::Helpers::Plan do
       plan = stub_ruby_terraform_plan
       show = stub_ruby_terraform_show
 
-      helper = described_class.new(
+      helper = described_class.new
+      helper.execute(
         required_parameters(execution_mode: :isolated)
           .merge(configuration_directory: 'path/to/destination/configuration')
       )
-      helper.execute
 
       expect(FileUtils)
         .to(have_received(:rm_rf)
@@ -500,11 +502,11 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
         )
-        helper.execute
 
         expect(init)
           .to(have_received(:execute)
@@ -519,11 +521,11 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
         )
-        helper.execute
 
         expect(init)
           .to(have_received(:execute)
@@ -539,11 +541,11 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
         )
-        helper.execute
 
         expect(plan)
           .to(have_received(:execute)
@@ -559,11 +561,11 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
         )
-        helper.execute
 
         expect(show)
           .to(have_received(:execute)
@@ -591,8 +593,8 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(required_parameters)
-      helper.execute
+      helper = described_class.new
+      helper.execute(required_parameters)
 
       expect(init)
         .to(have_received(:execute))
@@ -603,8 +605,8 @@ describe RSpec::Terraform::Helpers::Plan do
       plan = stub_ruby_terraform_plan(binary: terraform_binary)
       stub_ruby_terraform_show
 
-      helper = described_class.new(required_parameters)
-      helper.execute
+      helper = described_class.new
+      helper.execute(required_parameters)
 
       expect(plan)
         .to(have_received(:execute))
@@ -615,8 +617,8 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       show = stub_ruby_terraform_show(binary: terraform_binary)
 
-      helper = described_class.new(required_parameters)
-      helper.execute
+      helper = described_class.new
+      helper.execute(required_parameters)
 
       expect(show)
         .to(have_received(:execute))
@@ -630,10 +632,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(init)
           .to(have_received(:execute)
@@ -649,10 +651,10 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(plan)
           .to(have_received(:execute)
@@ -666,12 +668,12 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           required_parameters.merge(
             state_file: 'path/to/terraform/state'
           )
         )
-        helper.execute
 
         expect(plan)
           .to(have_received(:execute)
@@ -685,12 +687,12 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           required_parameters.merge(
             plan_file_name: 'the-plan-file'
           )
         )
-        helper.execute
 
         expect(plan)
           .to(have_received(:execute)
@@ -704,7 +706,8 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           required_parameters.merge(
             vars: {
               first: 1,
@@ -712,7 +715,6 @@ describe RSpec::Terraform::Helpers::Plan do
             }
           )
         )
-        helper.execute
 
         expect(plan)
           .to(have_received(:execute)
@@ -731,10 +733,10 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
-        helper.execute
 
         expect(show)
           .to(have_received(:execute)
@@ -748,12 +750,12 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new(
+        helper = described_class.new
+        helper.execute(
           required_parameters.merge(
             plan_file_name: 'the-plan-file'
           )
         )
-        helper.execute
 
         expect(show)
           .to(have_received(:execute)
@@ -777,7 +779,7 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          {}, configuration_provider
+          configuration_provider: configuration_provider
         )
         helper.execute
 
@@ -805,9 +807,9 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          override_configuration, configuration_provider
+          configuration_provider: configuration_provider
         )
-        helper.execute
+        helper.execute(override_configuration)
 
         expect(init)
           .to(have_received(:execute)
@@ -829,7 +831,7 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          {}, configuration_provider
+          configuration_provider: configuration_provider
         )
         helper.execute
 
@@ -853,7 +855,7 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          {}, configuration_provider
+          configuration_provider: configuration_provider
         )
         helper.execute
 
@@ -877,7 +879,7 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          {}, configuration_provider
+          configuration_provider: configuration_provider
         )
         helper.execute
 
@@ -904,7 +906,7 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          {}, configuration_provider
+          configuration_provider: configuration_provider
         )
         helper.execute
 
@@ -941,9 +943,9 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          override_configuration, configuration_provider
+          configuration_provider: configuration_provider
         )
-        helper.execute
+        helper.execute(override_configuration)
 
         expect(plan)
           .to(have_received(:execute)
@@ -968,7 +970,7 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          {}, configuration_provider
+          configuration_provider: configuration_provider
         )
         helper.execute
 
@@ -992,7 +994,7 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          {}, configuration_provider
+          configuration_provider: configuration_provider
         )
         helper.execute
 
@@ -1022,9 +1024,9 @@ describe RSpec::Terraform::Helpers::Plan do
           )
 
         helper = described_class.new(
-          override_configuration, configuration_provider
+          configuration_provider: configuration_provider
         )
-        helper.execute
+        helper.execute(override_configuration)
 
         expect(show)
           .to(have_received(:execute)
@@ -1042,8 +1044,8 @@ describe RSpec::Terraform::Helpers::Plan do
       plan = stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(required_parameters)
-      helper.execute do |vars|
+      helper = described_class.new
+      helper.execute(required_parameters) do |vars|
         vars.first = 1
         vars.second = 2
       end
@@ -1063,15 +1065,15 @@ describe RSpec::Terraform::Helpers::Plan do
       plan = stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(
+      helper = described_class.new
+      helper.execute(
         required_parameters.merge(
           vars: {
             first: 1,
             second: 2
           }
         )
-      )
-      helper.execute do |vars|
+      ) do |vars|
         vars.third = vars.first + vars.second
       end
 
@@ -1091,15 +1093,15 @@ describe RSpec::Terraform::Helpers::Plan do
       plan = stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new(
+      helper = described_class.new
+      helper.execute(
         required_parameters.merge(
           vars: {
             first: 1,
             second: 2
           }
         )
-      )
-      helper.execute do |vars|
+      ) do |vars|
         vars.second = 'two'
         vars.third = 'three'
       end
@@ -1129,10 +1131,9 @@ describe RSpec::Terraform::Helpers::Plan do
         )
 
       helper = described_class.new(
-        required_parameters,
-        configuration_provider
+        configuration_provider: configuration_provider
       )
-      helper.execute do |vars|
+      helper.execute(required_parameters) do |vars|
         vars.second = 'two'
         vars.third = 'three'
       end
