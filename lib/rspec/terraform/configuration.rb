@@ -12,8 +12,12 @@ module RSpec
           Providers::Identity.new
         end
 
-        def in_memory_provider(overrides)
-          Providers::InMemory.new(overrides)
+        def in_memory_provider(opts)
+          Providers::InMemory.new(opts)
+        end
+
+        def confidante_provider(opts)
+          Providers::Confidante.new(opts)
         end
       end
     end
