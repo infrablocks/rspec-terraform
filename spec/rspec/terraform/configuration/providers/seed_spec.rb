@@ -14,22 +14,11 @@ describe RSpec::Terraform::Configuration::Providers::Seed do
         expect(result).to(include(:seed))
       end
 
-      it 'returns the same seed on every invocation' do
+      it 'returns the same seed on every invocation when not reset' do
         provider = described_class.new
         result = 10.times.collect { |_| provider.resolve }
 
         expect(result.uniq.length).to(eq(1))
-      end
-
-      it 'returns a different value when reset between invocations' do
-        provider = described_class.new
-        result = 10.times.collect do |_|
-          seed = provider.resolve
-          provider.reset
-          seed
-        end
-
-        expect(result.uniq.length).to(eq(10))
       end
 
       it 'returns a random alphanumeric string of length 10 by default' do
@@ -97,6 +86,20 @@ describe RSpec::Terraform::Configuration::Providers::Seed do
         expect(result)
           .to(eq({ second: 2, seed: result[:seed] }))
       end
+    end
+  end
+
+  describe '#reset' do
+    it 'resets the seed value such that subsequent resolves return ' \
+       'a different seed' do
+      provider = described_class.new
+      result = 10.times.collect do |_|
+        seed = provider.resolve
+        provider.reset
+        seed
+      end
+
+      expect(result.uniq.length).to(eq(10))
     end
   end
 end

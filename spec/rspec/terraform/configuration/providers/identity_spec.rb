@@ -26,4 +26,12 @@ describe RSpec::Terraform::Configuration::Providers::Identity do
       end
     end
   end
+
+  describe '#reset' do
+    it 'does nothing' do
+      provider = described_class.new
+
+      expect { provider.reset }.not_to(raise_error)
+    end
+  end
 end

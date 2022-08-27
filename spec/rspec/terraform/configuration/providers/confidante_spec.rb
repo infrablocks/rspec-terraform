@@ -264,6 +264,16 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
     end
   end
 
+  describe '#reset' do
+    it 'does nothing' do
+      stub_confidante
+
+      provider = described_class.new
+
+      expect { provider.reset }.not_to(raise_error)
+    end
+  end
+
   # rubocop:disable RSpec/VerifiedDoubles
   def stub_confidante
     configuration = double(::Confidante::Configuration)

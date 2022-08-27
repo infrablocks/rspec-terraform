@@ -8,6 +8,18 @@ require_relative 'terraform/configuration'
 require_relative 'terraform/matchers'
 require_relative 'terraform/helpers'
 
+# TODO
+# ====
+#
+# * Chained configuration provider
+# * Helper functions
+# * Logging
+# * Test session
+# * Before support in matchers
+# * Reference support in matchers
+# * Sensitive support in matchers
+#
+
 RSpec.configure do |config|
   config.include(RSpec::Terraform::Matchers)
 
