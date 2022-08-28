@@ -12,12 +12,20 @@ module RSpec
           Providers::Identity.new
         end
 
-        def in_memory_provider(opts)
+        def in_memory_provider(opts = {})
           Providers::InMemory.new(opts)
         end
 
-        def confidante_provider(opts)
+        def confidante_provider(opts = {})
           Providers::Confidante.new(opts)
+        end
+
+        def seed_provider(opts = {})
+          Providers::Seed.new(opts)
+        end
+
+        def chain_provider(opts = {})
+          Providers::Chain.new(opts)
         end
       end
     end
