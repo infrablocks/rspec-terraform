@@ -11,7 +11,6 @@ require_relative 'terraform/helpers'
 # TODO
 # ====
 #
-# * Chained configuration provider
 # * Helper functions
 # * Logging
 # * Test session

@@ -7,6 +7,7 @@ module RSpec
     module Configuration
       module Providers
         class Base
+          def resolve(_ = {}); end
           def reset; end
         end
       end
