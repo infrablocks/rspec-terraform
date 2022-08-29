@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'confidante', '>= 0.27'
   spec.add_dependency 'rspec', '>= 3.0'
-  spec.add_dependency 'ruby-terraform', '1.7.0.pre.15'
+  spec.add_dependency 'ruby-terraform', '1.7.0.pre.16'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'faker'
