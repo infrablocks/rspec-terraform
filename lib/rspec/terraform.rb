@@ -20,6 +20,7 @@ require_relative 'terraform/helpers'
 
 RSpec.configure do |config|
   config.include(RSpec::Terraform::Matchers)
+  config.include(RSpec::Terraform::Helpers)
 
   config.add_setting(:terraform_binary, default: 'terraform')
   config.add_setting(:terraform_execution_mode, default: :in_place)
