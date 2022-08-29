@@ -172,22 +172,11 @@ describe RSpec::Terraform::Helpers::Apply do
   end
 
   context 'when Terraform execution mode is :in_place' do
-    def terraform_execution_mode
-      :in_place
-    end
-
-    around do |example|
-      previous = RSpec.configuration.terraform_execution_mode
-      RSpec.configuration.terraform_execution_mode = terraform_execution_mode
-      example.run
-      RSpec.configuration.terraform_execution_mode = previous
-    end
-
     it 'throws if no configuration_directory is provided' do
       stub_ruby_terraform_init
       stub_ruby_terraform_apply
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :in_place)
 
       expect { helper.execute }
         .to(raise_error(
@@ -202,7 +191,7 @@ describe RSpec::Terraform::Helpers::Apply do
       stub_ruby_terraform_init
       stub_ruby_terraform_apply
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :in_place)
       helper.execute(
         required_parameters(execution_mode: :in_place)
       )
@@ -217,7 +206,7 @@ describe RSpec::Terraform::Helpers::Apply do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_apply
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -233,7 +222,7 @@ describe RSpec::Terraform::Helpers::Apply do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_apply
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -249,7 +238,7 @@ describe RSpec::Terraform::Helpers::Apply do
         stub_ruby_terraform_init
         apply = stub_ruby_terraform_apply
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -264,22 +253,11 @@ describe RSpec::Terraform::Helpers::Apply do
   end
 
   context 'when Terraform execution mode is :isolated' do
-    def terraform_execution_mode
-      :isolated
-    end
-
-    around do |example|
-      previous = RSpec.configuration.terraform_execution_mode
-      RSpec.configuration.terraform_execution_mode = terraform_execution_mode
-      example.run
-      RSpec.configuration.terraform_execution_mode = previous
-    end
-
     it 'throws if no configuration_directory is provided' do
       stub_ruby_terraform_init
       stub_ruby_terraform_apply
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
 
       expect do
         helper.execute(
@@ -295,7 +273,7 @@ describe RSpec::Terraform::Helpers::Apply do
       stub_ruby_terraform_init
       stub_ruby_terraform_apply
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
 
       expect do
         helper.execute(
@@ -311,7 +289,7 @@ describe RSpec::Terraform::Helpers::Apply do
       stub_ruby_terraform_init
       stub_ruby_terraform_apply
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
 
       expect { helper.execute }
         .to(raise_error(
@@ -327,7 +305,7 @@ describe RSpec::Terraform::Helpers::Apply do
       init = stub_ruby_terraform_init
       apply = stub_ruby_terraform_apply
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
       helper.execute(
         required_parameters(execution_mode: :isolated)
           .merge(configuration_directory: 'path/to/destination/configuration')
@@ -351,7 +329,7 @@ describe RSpec::Terraform::Helpers::Apply do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_apply
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -369,7 +347,7 @@ describe RSpec::Terraform::Helpers::Apply do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_apply
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -388,7 +366,7 @@ describe RSpec::Terraform::Helpers::Apply do
         stub_ruby_terraform_init
         apply = stub_ruby_terraform_apply
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -404,22 +382,11 @@ describe RSpec::Terraform::Helpers::Apply do
   end
 
   context 'when Terraform binary overridden' do
-    def terraform_binary
-      'path/to/binary'
-    end
-
-    around do |example|
-      previous = RSpec.configuration.terraform_binary
-      RSpec.configuration.terraform_binary = terraform_binary
-      example.run
-      RSpec.configuration.terraform_binary = previous
-    end
-
     it 'inits using the specified binary' do
-      init = stub_ruby_terraform_init(binary: terraform_binary)
+      init = stub_ruby_terraform_init(binary: 'path/to/binary')
       stub_ruby_terraform_apply
 
-      helper = described_class.new
+      helper = described_class.new(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(init)
@@ -428,9 +395,9 @@ describe RSpec::Terraform::Helpers::Apply do
 
     it 'applies using the specified binary' do
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply(binary: terraform_binary)
+      apply = stub_ruby_terraform_apply(binary: 'path/to/binary')
 
-      helper = described_class.new
+      helper = described_class.new(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(apply)

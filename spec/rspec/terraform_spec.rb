@@ -15,4 +15,11 @@ RSpec.describe RSpec::Terraform do
      'defaulting to :in_place' do
     expect(RSpec.configuration.terraform_execution_mode).to(eq(:in_place))
   end
+
+  it 'adds a terraform_configuration_provider setting to RSpec' do
+    expect(RSpec.configuration.terraform_configuration_provider)
+      .to(be_an_instance_of(
+            RSpec::Terraform::Configuration::Providers::Identity
+          ))
+  end
 end

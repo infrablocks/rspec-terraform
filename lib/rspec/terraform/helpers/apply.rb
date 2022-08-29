@@ -15,8 +15,8 @@ module RSpec
         def initialize(opts = {})
           @configuration_provider =
             opts[:configuration_provider] || Configuration.identity_provider
-          @binary = RSpec.configuration.terraform_binary
-          @execution_mode = RSpec.configuration.terraform_execution_mode
+          @binary = opts[:binary] || 'terraform'
+          @execution_mode = opts[:execution_mode] || :in_place
         end
 
         def execute(overrides = {}, &block)

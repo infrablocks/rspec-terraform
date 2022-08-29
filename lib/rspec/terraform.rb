@@ -11,7 +11,6 @@ require_relative 'terraform/helpers'
 # TODO
 # ====
 #
-# * Helper functions
 # * Logging
 # * Test session
 # * Before support in matchers
@@ -24,4 +23,8 @@ RSpec.configure do |config|
 
   config.add_setting(:terraform_binary, default: 'terraform')
   config.add_setting(:terraform_execution_mode, default: :in_place)
+  config.add_setting(
+    :terraform_configuration_provider,
+    default: RSpec::Terraform::Configuration.identity_provider
+  )
 end

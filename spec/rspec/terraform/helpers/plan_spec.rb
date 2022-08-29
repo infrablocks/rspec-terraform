@@ -293,23 +293,12 @@ describe RSpec::Terraform::Helpers::Plan do
   end
 
   context 'when Terraform execution mode is :in_place' do
-    def terraform_execution_mode
-      :in_place
-    end
-
-    around do |example|
-      previous = RSpec.configuration.terraform_execution_mode
-      RSpec.configuration.terraform_execution_mode = terraform_execution_mode
-      example.run
-      RSpec.configuration.terraform_execution_mode = previous
-    end
-
     it 'throws if no configuration_directory is provided' do
       stub_ruby_terraform_init
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :in_place)
 
       expect { helper.execute }
         .to(raise_error(
@@ -325,7 +314,7 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :in_place)
       helper.execute(
         required_parameters(execution_mode: :in_place)
       )
@@ -341,7 +330,7 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -358,7 +347,7 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -375,7 +364,7 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -394,7 +383,7 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -409,23 +398,12 @@ describe RSpec::Terraform::Helpers::Plan do
   end
 
   context 'when Terraform execution mode is :isolated' do
-    def terraform_execution_mode
-      :isolated
-    end
-
-    around do |example|
-      previous = RSpec.configuration.terraform_execution_mode
-      RSpec.configuration.terraform_execution_mode = terraform_execution_mode
-      example.run
-      RSpec.configuration.terraform_execution_mode = previous
-    end
-
     it 'throws if no configuration_directory is provided' do
       stub_ruby_terraform_init
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
 
       expect do
         helper.execute(
@@ -442,7 +420,7 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
 
       expect do
         helper.execute(
@@ -459,7 +437,7 @@ describe RSpec::Terraform::Helpers::Plan do
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
 
       expect { helper.execute }
         .to(raise_error(
@@ -476,7 +454,7 @@ describe RSpec::Terraform::Helpers::Plan do
       plan = stub_ruby_terraform_plan
       show = stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(execution_mode: :isolated)
       helper.execute(
         required_parameters(execution_mode: :isolated)
           .merge(configuration_directory: 'path/to/destination/configuration')
@@ -502,7 +480,7 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -521,7 +499,7 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -541,7 +519,7 @@ describe RSpec::Terraform::Helpers::Plan do
         plan = stub_ruby_terraform_plan
         stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -561,7 +539,7 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show
 
-        helper = described_class.new
+        helper = described_class.new(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -589,11 +567,11 @@ describe RSpec::Terraform::Helpers::Plan do
     end
 
     it 'inits using the specified binary' do
-      init = stub_ruby_terraform_init(binary: terraform_binary)
+      init = stub_ruby_terraform_init(binary: 'path/to/binary')
       stub_ruby_terraform_plan
       stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(init)
@@ -602,10 +580,10 @@ describe RSpec::Terraform::Helpers::Plan do
 
     it 'plans using the specified binary' do
       stub_ruby_terraform_init
-      plan = stub_ruby_terraform_plan(binary: terraform_binary)
+      plan = stub_ruby_terraform_plan(binary: 'path/to/binary')
       stub_ruby_terraform_show
 
-      helper = described_class.new
+      helper = described_class.new(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(plan)
@@ -615,9 +593,9 @@ describe RSpec::Terraform::Helpers::Plan do
     it 'shows using the specified binary' do
       stub_ruby_terraform_init
       stub_ruby_terraform_plan
-      show = stub_ruby_terraform_show(binary: terraform_binary)
+      show = stub_ruby_terraform_show(binary: 'path/to/binary')
 
-      helper = described_class.new
+      helper = described_class.new(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(show)
