@@ -108,7 +108,7 @@ module RSpec
         def expected_value_lines
           renderable_value = with_matcher_renderable(value)
           value_object =
-            RubyTerraform::Models::Values.map(value: renderable_value)
+            RubyTerraform::Models::Values.map({ value: renderable_value })
           value_object.render(level: 6, bare: true)
         end
 
@@ -153,7 +153,7 @@ module RSpec
             actions = oc.change.actions.join(', ')
             value = oc.change.after_object
             value_object =
-              RubyTerraform::Models::Values.map(value: value)
+              RubyTerraform::Models::Values.map({ value: value })
             value_lines = value_object.render(level: 8, bare: true)
 
             "            - #{name} (#{actions})\n#{value_lines}"
