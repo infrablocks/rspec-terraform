@@ -20,7 +20,7 @@ require_relative 'terraform/helpers'
 
 RSpec.configure do |config|
   config.include(RSpec::Terraform::Matchers)
-  config.include(RSpec::Terraform::Helpers)
+  config.prepend(RSpec::Terraform::Helpers)
 
   config.add_setting(:terraform_binary, default: 'terraform')
   config.add_setting(:terraform_execution_mode, default: :in_place)
@@ -29,3 +29,6 @@ RSpec.configure do |config|
     default: RSpec::Terraform::Configuration.identity_provider
   )
 end
+
+RSpec::Core::AnonymousExampleGroup
+  .send(:include, RSpec::Terraform::Helpers)
