@@ -31,4 +31,4 @@ RSpec.configure do |config|
 end
 
 RSpec::Core::AnonymousExampleGroup
-  .send(:include, RSpec::Terraform::Helpers)
+  .include(RSpec::Terraform::Helpers)
