@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rspec-terraform (0.1.0.pre.36)
+    rspec-terraform (0.1.0.pre.37)
       confidante (>= 0.27)
       rspec (>= 3.0)
       ruby-terraform (= 1.7.0.pre.16)
