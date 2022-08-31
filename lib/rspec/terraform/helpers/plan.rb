@@ -32,6 +32,7 @@ module RSpec
           init(parameters)
           plan_file = plan(parameters)
           plan_contents = show(parameters, plan_file)
+          remove(parameters, plan_file)
 
           RubyTerraform::Models::Plan.new(
             JSON.parse(plan_contents, symbolize_names: true)
@@ -105,6 +106,12 @@ module RSpec
           stdout.string
         end
 
+        def remove(parameters, plan_file)
+          FileUtils.rm_f(
+            File.join(parameters[:configuration_directory], plan_file)
+          )
+        end
+
         def init_command
           RubyTerraform::Commands::Init.new(binary: binary)
         end
@@ -135,7 +142,8 @@ module RSpec
           plan_parameters =
             parameters.merge(
               chdir: parameters[:configuration_directory],
-              out: parameters[:plan_file_name] || SecureRandom.hex(10),
+              out: parameters[:plan_file_name] ||
+                "#{SecureRandom.hex[0, 10]}.tfplan",
               input: false
             )
 

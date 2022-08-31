@@ -5,6 +5,7 @@ require 'fileutils'
 
 describe RSpec::Terraform::Helpers::Plan do
   before do
+    stub_rm_f
     stub_rm_rf
     stub_mkdir_p
   end
@@ -72,6 +73,30 @@ describe RSpec::Terraform::Helpers::Plan do
       expect(FileUtils).not_to(have_received(:mkdir_p))
     end
     # rubocop:enable RSpec/MultipleExpectations
+
+    it 'deletes the created plan file after it has been read' do
+      init = stub_ruby_terraform_init
+      plan = stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show
+
+      plan_file = nil
+      allow(plan).to(receive(:execute) { |params| plan_file = params[:out] })
+
+      helper = described_class.new
+      helper.execute(
+        required_parameters.merge(
+          configuration_directory: 'path/to/configuration'
+        )
+      )
+
+      expect(init).to(have_received(:execute).ordered)
+      expect(plan).to(have_received(:execute).ordered)
+      expect(show).to(have_received(:execute).ordered)
+      expect(FileUtils)
+        .to(have_received(:rm_f)
+              .with("path/to/configuration/#{plan_file}")
+              .ordered)
+    end
 
     describe 'for init' do
       it 'instructs Terraform not to request interactive input' do
@@ -156,7 +181,7 @@ describe RSpec::Terraform::Helpers::Plan do
 
         expect(plan)
           .to(have_received(:execute)
-                    .with(hash_including(:out)))
+                .with(hash_including(out: ending_with('.tfplan'))))
       end
 
       it 'randomises the plan file' do
@@ -324,6 +349,30 @@ describe RSpec::Terraform::Helpers::Plan do
     end
     # rubocop:enable RSpec/MultipleExpectations
 
+    it 'deletes the created plan file after it has been read' do
+      init = stub_ruby_terraform_init
+      plan = stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show
+
+      plan_file = nil
+      allow(plan).to(receive(:execute) { |params| plan_file = params[:out] })
+
+      helper = described_class.new(execution_mode: :in_place)
+      helper.execute(
+        required_parameters(execution_mode: :in_place).merge(
+          configuration_directory: 'path/to/configuration'
+        )
+      )
+
+      expect(init).to(have_received(:execute).ordered)
+      expect(plan).to(have_received(:execute).ordered)
+      expect(show).to(have_received(:execute).ordered)
+      expect(FileUtils)
+        .to(have_received(:rm_f)
+              .with("path/to/configuration/#{plan_file}")
+              .ordered)
+    end
+
     describe 'for init' do
       it 'inits the specified Terraform configuration in place' do
         init = stub_ruby_terraform_init
@@ -473,6 +522,29 @@ describe RSpec::Terraform::Helpers::Plan do
       expect(show).to(have_received(:execute).ordered)
     end
     # rubocop:enable RSpec/MultipleExpectations
+
+    it 'deletes the created plan file after it has been read' do
+      init = stub_ruby_terraform_init
+      plan = stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show
+
+      plan_file = nil
+      allow(plan).to(receive(:execute) { |params| plan_file = params[:out] })
+
+      helper = described_class.new(execution_mode: :isolated)
+      helper.execute(
+        required_parameters(execution_mode: :isolated)
+          .merge(configuration_directory: 'path/to/destination/configuration')
+      )
+
+      expect(init).to(have_received(:execute).ordered)
+      expect(plan).to(have_received(:execute).ordered)
+      expect(show).to(have_received(:execute).ordered)
+      expect(FileUtils)
+        .to(have_received(:rm_f)
+              .with("path/to/destination/configuration/#{plan_file}")
+              .ordered)
+    end
 
     describe 'for init' do
       it 'inits the destination Terraform configuration' do
@@ -1172,6 +1244,10 @@ describe RSpec::Terraform::Helpers::Plan do
     allow(show).to(receive(:execute) { stdout&.write('{}') })
 
     show
+  end
+
+  def stub_rm_f
+    allow(FileUtils).to(receive(:rm_f))
   end
 
   def stub_rm_rf
