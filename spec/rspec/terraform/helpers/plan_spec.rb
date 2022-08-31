@@ -74,6 +74,7 @@ describe RSpec::Terraform::Helpers::Plan do
     end
     # rubocop:enable RSpec/MultipleExpectations
 
+    # rubocop:disable RSpec/MultipleExpectations
     it 'deletes the created plan file after it has been read' do
       init = stub_ruby_terraform_init
       plan = stub_ruby_terraform_plan
@@ -97,6 +98,7 @@ describe RSpec::Terraform::Helpers::Plan do
               .with("path/to/configuration/#{plan_file}")
               .ordered)
     end
+    # rubocop:enable RSpec/MultipleExpectations
 
     describe 'for init' do
       it 'instructs Terraform not to request interactive input' do
@@ -349,6 +351,7 @@ describe RSpec::Terraform::Helpers::Plan do
     end
     # rubocop:enable RSpec/MultipleExpectations
 
+    # rubocop:disable RSpec/MultipleExpectations
     it 'deletes the created plan file after it has been read' do
       init = stub_ruby_terraform_init
       plan = stub_ruby_terraform_plan
@@ -372,6 +375,7 @@ describe RSpec::Terraform::Helpers::Plan do
               .with("path/to/configuration/#{plan_file}")
               .ordered)
     end
+    # rubocop:enable RSpec/MultipleExpectations
 
     describe 'for init' do
       it 'inits the specified Terraform configuration in place' do
@@ -523,6 +527,7 @@ describe RSpec::Terraform::Helpers::Plan do
     end
     # rubocop:enable RSpec/MultipleExpectations
 
+    # rubocop:disable RSpec/MultipleExpectations
     it 'deletes the created plan file after it has been read' do
       init = stub_ruby_terraform_init
       plan = stub_ruby_terraform_plan
@@ -545,6 +550,7 @@ describe RSpec::Terraform::Helpers::Plan do
               .with("path/to/destination/configuration/#{plan_file}")
               .ordered)
     end
+    # rubocop:enable RSpec/MultipleExpectations
 
     describe 'for init' do
       it 'inits the destination Terraform configuration' do

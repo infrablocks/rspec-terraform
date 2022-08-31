@@ -33,10 +33,7 @@ module RSpec
           plan_file = plan(parameters)
           plan_contents = show(parameters, plan_file)
           remove(parameters, plan_file)
-
-          RubyTerraform::Models::Plan.new(
-            JSON.parse(plan_contents, symbolize_names: true)
-          )
+          parse(plan_contents)
         end
 
         private
@@ -104,6 +101,12 @@ module RSpec
           show_command(stdout: stdout)
             .execute(show_parameters(parameters, plan_file))
           stdout.string
+        end
+
+        def parse(plan_contents)
+          RubyTerraform::Models::Plan.new(
+            JSON.parse(plan_contents, symbolize_names: true)
+          )
         end
 
         def remove(parameters, plan_file)
