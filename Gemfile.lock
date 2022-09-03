@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rspec-terraform (0.1.0.pre.38)
+    rspec-terraform (0.1.0.pre.39)
       confidante (>= 0.27)
       rspec (>= 3.0)
       ruby-terraform (= 1.7.0.pre.16)
@@ -205,4 +205,4 @@ DEPENDENCIES
   terminal-notifier-guard
 
 BUNDLED WITH
-   2.3.20
+   2.3.21
