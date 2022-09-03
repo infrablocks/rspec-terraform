@@ -22,4 +22,29 @@ RSpec.describe RSpec::Terraform do
             RSpec::Terraform::Configuration::Providers::Identity
           ))
   end
+
+  it 'adds a terraform_log_file_path setting to RSpec' do
+    expect { RSpec.configuration.terraform_log_file_path }.not_to(raise_error)
+  end
+
+  it 'adds a terraform_log_streams setting to RSpec ' \
+     'defaulting to [:standard]' do
+    expect(RSpec.configuration.terraform_log_streams).to(eq([:standard]))
+  end
+
+  it 'adds a terraform_logger setting to RSpec' do
+    expect { RSpec.configuration.terraform_logger }.not_to(raise_error)
+  end
+
+  it 'adds a terraform_stdin setting to RSpec' do
+    expect { RSpec.configuration.terraform_stdin }.not_to(raise_error)
+  end
+
+  it 'adds a terraform_stdout setting to RSpec' do
+    expect { RSpec.configuration.terraform_stdout }.not_to(raise_error)
+  end
+
+  it 'adds a terraform_stderr setting to RSpec' do
+    expect { RSpec.configuration.terraform_stderr }.not_to(raise_error)
+  end
 end
