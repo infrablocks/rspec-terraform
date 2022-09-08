@@ -7,6 +7,7 @@ require_relative '../configuration/var_captor'
 module RSpec
   module Terraform
     module Helpers
+      # rubocop:disable Metrics/ClassLength
       class Apply
         attr_reader(
           :configuration_provider,
@@ -155,6 +156,7 @@ module RSpec
           }
         end
       end
+      # rubocop:enable Metrics/ClassLength
     end
   end
 end

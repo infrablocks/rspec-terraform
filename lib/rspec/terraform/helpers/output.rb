@@ -5,6 +5,7 @@ require 'ruby_terraform'
 module RSpec
   module Terraform
     module Helpers
+      # rubocop:disable Metrics/ClassLength
       class Output
         attr_reader(
           :configuration_provider,
@@ -145,5 +146,6 @@ module RSpec
         end
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
