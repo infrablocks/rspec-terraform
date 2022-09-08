@@ -27,6 +27,10 @@ RSpec.describe RSpec::Terraform do
     expect { RSpec.configuration.terraform_log_file_path }.not_to(raise_error)
   end
 
+  it 'adds a terraform_log_level setting to RSpec' do
+    expect(RSpec.configuration.terraform_log_level).to(eq(Logger::INFO))
+  end
+
   it 'adds a terraform_log_streams setting to RSpec ' \
      'defaulting to [:standard]' do
     expect(RSpec.configuration.terraform_log_streams).to(eq([:standard]))

@@ -2,6 +2,7 @@
 
 require 'rspec/core'
 require 'ruby_terraform'
+require 'logger'
 
 require_relative 'terraform/version'
 require_relative 'terraform/configuration'
@@ -12,7 +13,6 @@ require_relative 'terraform/logging'
 # TODO
 # ====
 #
-# * Logging
 # * Test session
 # * Before support in matchers
 # * Reference support in matchers
@@ -27,6 +27,7 @@ RSpec.configure do |config|
   config.add_setting(:terraform_binary, default: 'terraform')
 
   config.add_setting(:terraform_log_file_path, default: nil)
+  config.add_setting(:terraform_log_level, default: Logger::INFO)
   config.add_setting(:terraform_log_streams, default: [:standard])
 
   config.add_setting(:terraform_logger, default: nil)
@@ -44,6 +45,7 @@ RSpec.configure do |config|
   config.before(:suite) do
     resolved_streams = RSpec::Terraform::Logging.resolve_streams(
       file_path: RSpec.configuration.terraform_log_file_path,
+      level: RSpec.configuration.terraform_log_level,
       streams: RSpec.configuration.terraform_log_streams,
       logger: RSpec.configuration.terraform_logger,
       stdout: RSpec.configuration.terraform_stdout,
