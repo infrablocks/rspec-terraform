@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'fileutils'
+require 'stringio'
 
 describe RSpec::Terraform::Helpers::Destroy do
   before do
@@ -103,6 +104,50 @@ describe RSpec::Terraform::Helpers::Destroy do
         expect(init)
           .to(have_received(:execute))
       end
+
+      it 'uses a logger of nil' do
+        init = stub_ruby_terraform_init(logger: nil)
+        stub_ruby_terraform_destroy
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdin of nil' do
+        init = stub_ruby_terraform_init(stdin: nil)
+        stub_ruby_terraform_destroy
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdout of nil' do
+        init = stub_ruby_terraform_init(stdout: nil)
+        stub_ruby_terraform_destroy
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stderr of nil' do
+        init = stub_ruby_terraform_init(stderr: nil)
+        stub_ruby_terraform_destroy
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
     end
 
     describe 'for destroy' do
@@ -161,6 +206,50 @@ describe RSpec::Terraform::Helpers::Destroy do
       it 'uses a Terraform binary of "terraform"' do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy(binary: 'terraform')
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(destroy)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a logger of nil' do
+        stub_ruby_terraform_init
+        destroy = stub_ruby_terraform_destroy(logger: nil)
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(destroy)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdin of nil' do
+        stub_ruby_terraform_init
+        destroy = stub_ruby_terraform_destroy(stdin: nil)
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(destroy)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdout of nil' do
+        stub_ruby_terraform_init
+        destroy = stub_ruby_terraform_destroy(stdout: nil)
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(destroy)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stderr of nil' do
+        stub_ruby_terraform_init
+        destroy = stub_ruby_terraform_destroy(stderr: nil)
 
         helper = described_class.new
         helper.execute(required_parameters)
@@ -398,6 +487,118 @@ describe RSpec::Terraform::Helpers::Destroy do
       destroy = stub_ruby_terraform_destroy(binary: 'path/to/binary')
 
       helper = described_class.new(binary: 'path/to/binary')
+      helper.execute(required_parameters)
+
+      expect(destroy)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when logger overridden' do
+    it 'inits using the specified logger' do
+      logger = instance_double(Logger)
+
+      init = stub_ruby_terraform_init(logger: logger)
+      stub_ruby_terraform_destroy
+
+      helper = described_class.new(logger: logger)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'applies using the specified logger' do
+      logger = instance_double(Logger)
+
+      stub_ruby_terraform_init
+      destroy = stub_ruby_terraform_destroy(logger: logger)
+
+      helper = described_class.new(logger: logger)
+      helper.execute(required_parameters)
+
+      expect(destroy)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stdin overridden' do
+    it 'inits using the specified stdin' do
+      stdin = StringIO.new
+
+      init = stub_ruby_terraform_init(stdin: stdin)
+      stub_ruby_terraform_destroy
+
+      helper = described_class.new(stdin: stdin)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'applies using the specified stdin' do
+      stdin = StringIO.new
+
+      stub_ruby_terraform_init
+      destroy = stub_ruby_terraform_destroy(stdin: stdin)
+
+      helper = described_class.new(stdin: stdin)
+      helper.execute(required_parameters)
+
+      expect(destroy)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stdout overridden' do
+    it 'inits using the specified stdout' do
+      stdout = StringIO.new
+
+      init = stub_ruby_terraform_init(stdout: stdout)
+      stub_ruby_terraform_destroy
+
+      helper = described_class.new(stdout: stdout)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'applies using the specified stdout' do
+      stdout = StringIO.new
+
+      stub_ruby_terraform_init
+      destroy = stub_ruby_terraform_destroy(stdout: stdout)
+
+      helper = described_class.new(stdout: stdout)
+      helper.execute(required_parameters)
+
+      expect(destroy)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stderr overridden' do
+    it 'inits using the specified stderr' do
+      stderr = StringIO.new
+
+      init = stub_ruby_terraform_init(stderr: stderr)
+      stub_ruby_terraform_destroy
+
+      helper = described_class.new(stderr: stderr)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'applies using the specified stderr' do
+      stderr = StringIO.new
+
+      stub_ruby_terraform_init
+      destroy = stub_ruby_terraform_destroy(stderr: stderr)
+
+      helper = described_class.new(stderr: stderr)
       helper.execute(required_parameters)
 
       expect(destroy)
@@ -776,7 +977,7 @@ describe RSpec::Terraform::Helpers::Destroy do
     allow(init).to(receive(:execute))
 
     expectation = receive(:new)
-    expectation = expectation.with(opts) if opts
+    expectation = expectation.with(hash_including(opts)) if opts
     expectation = expectation.and_return(init)
     allow(RubyTerraform::Commands::Init).to(expectation)
 
@@ -788,7 +989,7 @@ describe RSpec::Terraform::Helpers::Destroy do
     allow(destroy).to(receive(:execute))
 
     expectation = receive(:new)
-    expectation = expectation.with(opts) if opts
+    expectation = expectation.with(hash_including(opts)) if opts
     expectation = expectation.and_return(destroy)
     allow(RubyTerraform::Commands::Destroy).to(expectation)
 

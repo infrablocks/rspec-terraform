@@ -12,13 +12,23 @@ module RSpec
       # rubocop:disable Metrics/ClassLength
       class Plan
         attr_reader(
-          :configuration_provider, :binary, :execution_mode
+          :configuration_provider,
+          :binary,
+          :logger,
+          :stdin,
+          :stdout,
+          :stderr,
+          :execution_mode
         )
 
         def initialize(opts = {})
           @configuration_provider =
             opts[:configuration_provider] || Configuration.identity_provider
           @binary = opts[:binary] || 'terraform'
+          @logger = opts[:logger]
+          @stdin = opts[:stdin]
+          @stdout = opts[:stdout]
+          @stderr = opts[:stderr]
           @execution_mode = opts[:execution_mode] || :in_place
         end
 
@@ -116,15 +126,15 @@ module RSpec
         end
 
         def init_command
-          RubyTerraform::Commands::Init.new(binary: binary)
+          RubyTerraform::Commands::Init.new(command_options)
         end
 
         def plan_command
-          RubyTerraform::Commands::Plan.new(binary: binary)
+          RubyTerraform::Commands::Plan.new(command_options)
         end
 
         def show_command(opts = {})
-          RubyTerraform::Commands::Show.new(opts.merge(binary: binary))
+          RubyTerraform::Commands::Show.new(command_options.merge(opts))
         end
 
         def init_parameters(parameters)
@@ -166,6 +176,16 @@ module RSpec
             no_color: true,
             json: true
           )
+        end
+
+        def command_options
+          {
+            binary: binary,
+            logger: logger,
+            stdin: stdin,
+            stdout: stdout,
+            stderr: stderr
+          }
         end
       end
       # rubocop:enable Metrics/ClassLength

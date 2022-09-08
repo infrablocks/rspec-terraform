@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'fileutils'
+require 'stringio'
 
 describe RSpec::Terraform::Helpers::Output do
   before do
@@ -144,6 +145,50 @@ describe RSpec::Terraform::Helpers::Output do
         expect(init)
           .to(have_received(:execute))
       end
+
+      it 'uses a logger of nil' do
+        init = stub_ruby_terraform_init(logger: nil)
+        stub_ruby_terraform_output
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdin of nil' do
+        init = stub_ruby_terraform_init(stdin: nil)
+        stub_ruby_terraform_output
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdout of nil' do
+        init = stub_ruby_terraform_init(stdout: nil)
+        stub_ruby_terraform_output
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stderr of nil' do
+        init = stub_ruby_terraform_init(stderr: nil)
+        stub_ruby_terraform_output
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
     end
 
     describe 'for output' do
@@ -204,6 +249,39 @@ describe RSpec::Terraform::Helpers::Output do
       it 'uses a Terraform binary of "terraform"' do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output(binary: 'terraform')
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(output)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a logger of nil' do
+        stub_ruby_terraform_init
+        output = stub_ruby_terraform_output(logger: nil)
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(output)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdin of nil' do
+        stub_ruby_terraform_init
+        output = stub_ruby_terraform_output(stdin: nil)
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(output)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stderr of nil' do
+        stub_ruby_terraform_init
+        output = stub_ruby_terraform_output(stderr: nil)
 
         helper = described_class.new
         helper.execute(required_parameters)
@@ -495,6 +573,105 @@ describe RSpec::Terraform::Helpers::Output do
     end
   end
 
+  context 'when logger overridden' do
+    it 'inits using the specified logger' do
+      logger = instance_double(Logger)
+
+      init = stub_ruby_terraform_init(logger: logger)
+      stub_ruby_terraform_output
+
+      helper = described_class.new(logger: logger)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'applies using the specified logger' do
+      logger = instance_double(Logger)
+
+      stub_ruby_terraform_init
+      output = stub_ruby_terraform_output(logger: logger)
+
+      helper = described_class.new(logger: logger)
+      helper.execute(required_parameters)
+
+      expect(output)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stdin overridden' do
+    it 'inits using the specified stdin' do
+      stdin = StringIO.new
+
+      init = stub_ruby_terraform_init(stdin: stdin)
+      stub_ruby_terraform_output
+
+      helper = described_class.new(stdin: stdin)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'applies using the specified stdin' do
+      stdin = StringIO.new
+
+      stub_ruby_terraform_init
+      output = stub_ruby_terraform_output(stdin: stdin)
+
+      helper = described_class.new(stdin: stdin)
+      helper.execute(required_parameters)
+
+      expect(output)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stdout overridden' do
+    it 'inits using the specified stdout' do
+      stdout = StringIO.new
+
+      init = stub_ruby_terraform_init(stdout: stdout)
+      stub_ruby_terraform_output
+
+      helper = described_class.new(stdout: stdout)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stderr overridden' do
+    it 'inits using the specified stderr' do
+      stderr = StringIO.new
+
+      init = stub_ruby_terraform_init(stderr: stderr)
+      stub_ruby_terraform_output
+
+      helper = described_class.new(stderr: stderr)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'applies using the specified stderr' do
+      stderr = StringIO.new
+
+      stub_ruby_terraform_init
+      output = stub_ruby_terraform_output(stderr: stderr)
+
+      helper = described_class.new(stderr: stderr)
+      helper.execute(required_parameters)
+
+      expect(output)
+        .to(have_received(:execute))
+    end
+  end
+
   context 'when configuration overrides provided' do
     describe 'for init' do
       it 'uses the specified Terraform configuration' do
@@ -740,7 +917,7 @@ describe RSpec::Terraform::Helpers::Output do
     allow(init).to(receive(:execute))
 
     expectation = receive(:new)
-    expectation = expectation.with(opts) if opts
+    expectation = expectation.with(hash_including(opts)) if opts
     expectation = expectation.and_return(init)
     allow(RubyTerraform::Commands::Init).to(expectation)
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'logger'
 
 describe RSpec::Terraform::Helpers do
   let(:including_class) { Class.new { include RSpec::Terraform::Helpers } }
@@ -20,14 +21,38 @@ describe RSpec::Terraform::Helpers do
           .in_memory_provider(first: 1, second: 2)
     end
 
+    def overridden_logger
+      @overridden_logger ||= instance_double(Logger)
+    end
+
+    def overridden_stdin
+      @overridden_stdin ||= StringIO.new
+    end
+
+    def overridden_stdout
+      @overridden_stdout ||= StringIO.new
+    end
+
+    def overridden_stderr
+      @overridden_stderr ||= StringIO.new
+    end
+
     around do |example|
       config = RSpec.configuration
 
       previous_binary = config.terraform_binary
+      previous_logger = config.terraform_logger
+      previous_stdin = config.terraform_stdin
+      previous_stdout = config.terraform_stdout
+      previous_stderr = config.terraform_stderr
       previous_execution_mode = config.terraform_execution_mode
       previous_configuration_provider = config.terraform_configuration_provider
 
       config.terraform_binary = overridden_binary
+      config.terraform_logger = overridden_logger
+      config.terraform_stdin = overridden_stdin
+      config.terraform_stdout = overridden_stdout
+      config.terraform_stderr = overridden_stderr
       config.terraform_execution_mode = overridden_execution_mode
       config.terraform_configuration_provider =
         overridden_configuration_provider
@@ -35,6 +60,10 @@ describe RSpec::Terraform::Helpers do
       example.run
 
       config.terraform_binary = previous_binary
+      config.terraform_logger = previous_logger
+      config.terraform_stdin = previous_stdin
+      config.terraform_stdout = previous_stdout
+      config.terraform_stderr = previous_stderr
       config.terraform_execution_mode = previous_execution_mode
       config.terraform_configuration_provider = previous_configuration_provider
     end
@@ -58,6 +87,66 @@ describe RSpec::Terraform::Helpers do
       allow(RSpec::Terraform::Helpers::Apply)
         .to(receive(:new)
               .with(hash_including(binary: overridden_binary))
+              .and_return(apply))
+      allow(apply).to(receive(:execute))
+
+      instance = including_class.new
+      instance.apply
+
+      expect(apply).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform logger on construction' do
+      apply = instance_double(RSpec::Terraform::Helpers::Apply)
+
+      allow(RSpec::Terraform::Helpers::Apply)
+        .to(receive(:new)
+              .with(hash_including(logger: overridden_logger))
+              .and_return(apply))
+      allow(apply).to(receive(:execute))
+
+      instance = including_class.new
+      instance.apply
+
+      expect(apply).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdin on construction' do
+      apply = instance_double(RSpec::Terraform::Helpers::Apply)
+
+      allow(RSpec::Terraform::Helpers::Apply)
+        .to(receive(:new)
+              .with(hash_including(stdin: overridden_stdin))
+              .and_return(apply))
+      allow(apply).to(receive(:execute))
+
+      instance = including_class.new
+      instance.apply
+
+      expect(apply).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdout on construction' do
+      apply = instance_double(RSpec::Terraform::Helpers::Apply)
+
+      allow(RSpec::Terraform::Helpers::Apply)
+        .to(receive(:new)
+              .with(hash_including(stdout: overridden_stdout))
+              .and_return(apply))
+      allow(apply).to(receive(:execute))
+
+      instance = including_class.new
+      instance.apply
+
+      expect(apply).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stderr on construction' do
+      apply = instance_double(RSpec::Terraform::Helpers::Apply)
+
+      allow(RSpec::Terraform::Helpers::Apply)
+        .to(receive(:new)
+              .with(hash_including(stderr: overridden_stderr))
               .and_return(apply))
       allow(apply).to(receive(:execute))
 
@@ -159,14 +248,38 @@ describe RSpec::Terraform::Helpers do
           .in_memory_provider(first: 1, second: 2)
     end
 
+    def overridden_logger
+      @overridden_logger ||= instance_double(Logger)
+    end
+
+    def overridden_stdin
+      @overridden_stdin ||= StringIO.new
+    end
+
+    def overridden_stdout
+      @overridden_stdout ||= StringIO.new
+    end
+
+    def overridden_stderr
+      @overridden_stderr ||= StringIO.new
+    end
+
     around do |example|
       config = RSpec.configuration
 
       previous_binary = config.terraform_binary
+      previous_logger = config.terraform_logger
+      previous_stdin = config.terraform_stdin
+      previous_stdout = config.terraform_stdout
+      previous_stderr = config.terraform_stderr
       previous_execution_mode = config.terraform_execution_mode
       previous_configuration_provider = config.terraform_configuration_provider
 
       config.terraform_binary = overridden_binary
+      config.terraform_logger = overridden_logger
+      config.terraform_stdin = overridden_stdin
+      config.terraform_stdout = overridden_stdout
+      config.terraform_stderr = overridden_stderr
       config.terraform_execution_mode = overridden_execution_mode
       config.terraform_configuration_provider =
         overridden_configuration_provider
@@ -174,6 +287,10 @@ describe RSpec::Terraform::Helpers do
       example.run
 
       config.terraform_binary = previous_binary
+      config.terraform_logger = previous_logger
+      config.terraform_stdin = previous_stdin
+      config.terraform_stdout = previous_stdout
+      config.terraform_stderr = previous_stderr
       config.terraform_execution_mode = previous_execution_mode
       config.terraform_configuration_provider = previous_configuration_provider
     end
@@ -197,6 +314,66 @@ describe RSpec::Terraform::Helpers do
       allow(RSpec::Terraform::Helpers::Destroy)
         .to(receive(:new)
               .with(hash_including(binary: overridden_binary))
+              .and_return(destroy))
+      allow(destroy).to(receive(:execute))
+
+      instance = including_class.new
+      instance.destroy
+
+      expect(destroy).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform logger on construction' do
+      destroy = instance_double(RSpec::Terraform::Helpers::Destroy)
+
+      allow(RSpec::Terraform::Helpers::Destroy)
+        .to(receive(:new)
+              .with(hash_including(logger: overridden_logger))
+              .and_return(destroy))
+      allow(destroy).to(receive(:execute))
+
+      instance = including_class.new
+      instance.destroy
+
+      expect(destroy).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdin on construction' do
+      destroy = instance_double(RSpec::Terraform::Helpers::Destroy)
+
+      allow(RSpec::Terraform::Helpers::Destroy)
+        .to(receive(:new)
+              .with(hash_including(stdin: overridden_stdin))
+              .and_return(destroy))
+      allow(destroy).to(receive(:execute))
+
+      instance = including_class.new
+      instance.destroy
+
+      expect(destroy).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdout on construction' do
+      destroy = instance_double(RSpec::Terraform::Helpers::Destroy)
+
+      allow(RSpec::Terraform::Helpers::Destroy)
+        .to(receive(:new)
+              .with(hash_including(stdout: overridden_stdout))
+              .and_return(destroy))
+      allow(destroy).to(receive(:execute))
+
+      instance = including_class.new
+      instance.destroy
+
+      expect(destroy).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stderr on construction' do
+      destroy = instance_double(RSpec::Terraform::Helpers::Destroy)
+
+      allow(RSpec::Terraform::Helpers::Destroy)
+        .to(receive(:new)
+              .with(hash_including(stderr: overridden_stderr))
               .and_return(destroy))
       allow(destroy).to(receive(:execute))
 
@@ -298,14 +475,38 @@ describe RSpec::Terraform::Helpers do
           .in_memory_provider(first: 1, second: 2)
     end
 
+    def overridden_logger
+      @overridden_logger ||= instance_double(Logger)
+    end
+
+    def overridden_stdin
+      @overridden_stdin ||= StringIO.new
+    end
+
+    def overridden_stdout
+      @overridden_stdout ||= StringIO.new
+    end
+
+    def overridden_stderr
+      @overridden_stderr ||= StringIO.new
+    end
+
     around do |example|
       config = RSpec.configuration
 
       previous_binary = config.terraform_binary
+      previous_logger = config.terraform_logger
+      previous_stdin = config.terraform_stdin
+      previous_stdout = config.terraform_stdout
+      previous_stderr = config.terraform_stderr
       previous_execution_mode = config.terraform_execution_mode
       previous_configuration_provider = config.terraform_configuration_provider
 
       config.terraform_binary = overridden_binary
+      config.terraform_logger = overridden_logger
+      config.terraform_stdin = overridden_stdin
+      config.terraform_stdout = overridden_stdout
+      config.terraform_stderr = overridden_stderr
       config.terraform_execution_mode = overridden_execution_mode
       config.terraform_configuration_provider =
         overridden_configuration_provider
@@ -313,6 +514,10 @@ describe RSpec::Terraform::Helpers do
       example.run
 
       config.terraform_binary = previous_binary
+      config.terraform_logger = previous_logger
+      config.terraform_stdin = previous_stdin
+      config.terraform_stdout = previous_stdout
+      config.terraform_stderr = previous_stderr
       config.terraform_execution_mode = previous_execution_mode
       config.terraform_configuration_provider = previous_configuration_provider
     end
@@ -336,6 +541,66 @@ describe RSpec::Terraform::Helpers do
       allow(RSpec::Terraform::Helpers::Output)
         .to(receive(:new)
               .with(hash_including(binary: overridden_binary))
+              .and_return(output))
+      allow(output).to(receive(:execute))
+
+      instance = including_class.new
+      instance.output
+
+      expect(output).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform logger on construction' do
+      output = instance_double(RSpec::Terraform::Helpers::Output)
+
+      allow(RSpec::Terraform::Helpers::Output)
+        .to(receive(:new)
+              .with(hash_including(logger: overridden_logger))
+              .and_return(output))
+      allow(output).to(receive(:execute))
+
+      instance = including_class.new
+      instance.output
+
+      expect(output).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdin on construction' do
+      output = instance_double(RSpec::Terraform::Helpers::Output)
+
+      allow(RSpec::Terraform::Helpers::Output)
+        .to(receive(:new)
+              .with(hash_including(stdin: overridden_stdin))
+              .and_return(output))
+      allow(output).to(receive(:execute))
+
+      instance = including_class.new
+      instance.output
+
+      expect(output).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdout on construction' do
+      output = instance_double(RSpec::Terraform::Helpers::Output)
+
+      allow(RSpec::Terraform::Helpers::Output)
+        .to(receive(:new)
+              .with(hash_including(stdout: overridden_stdout))
+              .and_return(output))
+      allow(output).to(receive(:execute))
+
+      instance = including_class.new
+      instance.output
+
+      expect(output).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stderr on construction' do
+      output = instance_double(RSpec::Terraform::Helpers::Output)
+
+      allow(RSpec::Terraform::Helpers::Output)
+        .to(receive(:new)
+              .with(hash_including(stderr: overridden_stderr))
               .and_return(output))
       allow(output).to(receive(:execute))
 
@@ -437,14 +702,38 @@ describe RSpec::Terraform::Helpers do
           .in_memory_provider(first: 1, second: 2)
     end
 
+    def overridden_logger
+      @overridden_logger ||= instance_double(Logger)
+    end
+
+    def overridden_stdin
+      @overridden_stdin ||= StringIO.new
+    end
+
+    def overridden_stdout
+      @overridden_stdout ||= StringIO.new
+    end
+
+    def overridden_stderr
+      @overridden_stderr ||= StringIO.new
+    end
+
     around do |example|
       config = RSpec.configuration
 
       previous_binary = config.terraform_binary
+      previous_logger = config.terraform_logger
+      previous_stdin = config.terraform_stdin
+      previous_stdout = config.terraform_stdout
+      previous_stderr = config.terraform_stderr
       previous_execution_mode = config.terraform_execution_mode
       previous_configuration_provider = config.terraform_configuration_provider
 
       config.terraform_binary = overridden_binary
+      config.terraform_logger = overridden_logger
+      config.terraform_stdin = overridden_stdin
+      config.terraform_stdout = overridden_stdout
+      config.terraform_stderr = overridden_stderr
       config.terraform_execution_mode = overridden_execution_mode
       config.terraform_configuration_provider =
         overridden_configuration_provider
@@ -452,6 +741,10 @@ describe RSpec::Terraform::Helpers do
       example.run
 
       config.terraform_binary = previous_binary
+      config.terraform_logger = previous_logger
+      config.terraform_stdin = previous_stdin
+      config.terraform_stdout = previous_stdout
+      config.terraform_stderr = previous_stderr
       config.terraform_execution_mode = previous_execution_mode
       config.terraform_configuration_provider = previous_configuration_provider
     end
@@ -475,6 +768,66 @@ describe RSpec::Terraform::Helpers do
       allow(RSpec::Terraform::Helpers::Plan)
         .to(receive(:new)
               .with(hash_including(binary: overridden_binary))
+              .and_return(plan))
+      allow(plan).to(receive(:execute))
+
+      instance = including_class.new
+      instance.plan
+
+      expect(plan).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform logger on construction' do
+      plan = instance_double(RSpec::Terraform::Helpers::Plan)
+
+      allow(RSpec::Terraform::Helpers::Plan)
+        .to(receive(:new)
+              .with(hash_including(logger: overridden_logger))
+              .and_return(plan))
+      allow(plan).to(receive(:execute))
+
+      instance = including_class.new
+      instance.plan
+
+      expect(plan).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdin on construction' do
+      plan = instance_double(RSpec::Terraform::Helpers::Plan)
+
+      allow(RSpec::Terraform::Helpers::Plan)
+        .to(receive(:new)
+              .with(hash_including(stdin: overridden_stdin))
+              .and_return(plan))
+      allow(plan).to(receive(:execute))
+
+      instance = including_class.new
+      instance.plan
+
+      expect(plan).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stdout on construction' do
+      plan = instance_double(RSpec::Terraform::Helpers::Plan)
+
+      allow(RSpec::Terraform::Helpers::Plan)
+        .to(receive(:new)
+              .with(hash_including(stdout: overridden_stdout))
+              .and_return(plan))
+      allow(plan).to(receive(:execute))
+
+      instance = including_class.new
+      instance.plan
+
+      expect(plan).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform stderr on construction' do
+      plan = instance_double(RSpec::Terraform::Helpers::Plan)
+
+      allow(RSpec::Terraform::Helpers::Plan)
+        .to(receive(:new)
+              .with(hash_including(stderr: overridden_stderr))
               .and_return(plan))
       allow(plan).to(receive(:execute))
 
@@ -568,16 +921,23 @@ describe RSpec::Terraform::Helpers do
           .in_memory_provider(first: 1, second: 2)
     end
 
+    def overridden_logger
+      @overridden_logger ||= instance_double(Logger)
+    end
+
     around do |example|
       config = RSpec.configuration
 
+      previous_logger = config.terraform_logger
       previous_configuration_provider = config.terraform_configuration_provider
 
+      config.terraform_logger = overridden_logger
       config.terraform_configuration_provider =
         overridden_configuration_provider
 
       example.run
 
+      config.terraform_logger = previous_logger
       config.terraform_configuration_provider = previous_configuration_provider
     end
 
@@ -586,6 +946,21 @@ describe RSpec::Terraform::Helpers do
 
       allow(RSpec::Terraform::Helpers::Var)
         .to(receive(:new).and_return(var))
+      allow(var).to(receive(:execute))
+
+      instance = including_class.new
+      instance.var
+
+      expect(var).to(have_received(:execute))
+    end
+
+    it 'passes the configured terraform logger on construction' do
+      var = instance_double(RSpec::Terraform::Helpers::Var)
+
+      allow(RSpec::Terraform::Helpers::Var)
+        .to(receive(:new)
+              .with(hash_including(logger: overridden_logger))
+              .and_return(var))
       allow(var).to(receive(:execute))
 
       instance = including_class.new

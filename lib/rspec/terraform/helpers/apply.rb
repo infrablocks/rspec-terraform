@@ -9,13 +9,23 @@ module RSpec
     module Helpers
       class Apply
         attr_reader(
-          :configuration_provider, :binary, :execution_mode
+          :configuration_provider,
+          :binary,
+          :logger,
+          :stdin,
+          :stdout,
+          :stderr,
+          :execution_mode
         )
 
         def initialize(opts = {})
           @configuration_provider =
             opts[:configuration_provider] || Configuration.identity_provider
           @binary = opts[:binary] || 'terraform'
+          @logger = opts[:logger]
+          @stdin = opts[:stdin]
+          @stdout = opts[:stdout]
+          @stderr = opts[:stderr]
           @execution_mode = opts[:execution_mode] || :in_place
         end
 
@@ -97,11 +107,11 @@ module RSpec
         end
 
         def init_command
-          RubyTerraform::Commands::Init.new(binary: binary)
+          RubyTerraform::Commands::Init.new(command_options)
         end
 
         def apply_command
-          RubyTerraform::Commands::Apply.new(binary: binary)
+          RubyTerraform::Commands::Apply.new(command_options)
         end
 
         def init_parameters(parameters)
@@ -134,6 +144,16 @@ module RSpec
           apply_parameters
         end
         # rubocop:enable Metrics/MethodLength
+
+        def command_options
+          {
+            binary: binary,
+            logger: logger,
+            stdin: stdin,
+            stdout: stdout,
+            stderr: stderr
+          }
+        end
       end
     end
   end

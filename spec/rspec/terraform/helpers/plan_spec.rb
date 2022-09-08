@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'fileutils'
+require 'stringio'
 
 describe RSpec::Terraform::Helpers::Plan do
   before do
@@ -157,6 +158,54 @@ describe RSpec::Terraform::Helpers::Plan do
         expect(init)
           .to(have_received(:execute))
       end
+
+      it 'uses a logger of nil' do
+        init = stub_ruby_terraform_init(logger: nil)
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdin of nil' do
+        init = stub_ruby_terraform_init(stdin: nil)
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdout of nil' do
+        init = stub_ruby_terraform_init(stdout: nil)
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stderr of nil' do
+        init = stub_ruby_terraform_init(stderr: nil)
+        stub_ruby_terraform_plan
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(init)
+          .to(have_received(:execute))
+      end
     end
 
     describe 'for plan' do
@@ -242,6 +291,54 @@ describe RSpec::Terraform::Helpers::Plan do
         expect(plan)
           .to(have_received(:execute))
       end
+
+      it 'uses a logger of nil' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan(logger: nil)
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(plan)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdin of nil' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan(stdin: nil)
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(plan)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdout of nil' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan(stdout: nil)
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(plan)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stderr of nil' do
+        stub_ruby_terraform_init
+        plan = stub_ruby_terraform_plan(stderr: nil)
+        stub_ruby_terraform_show
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(plan)
+          .to(have_received(:execute))
+      end
     end
 
     describe 'for show' do
@@ -309,6 +406,42 @@ describe RSpec::Terraform::Helpers::Plan do
         stub_ruby_terraform_init
         stub_ruby_terraform_plan
         show = stub_ruby_terraform_show(binary: 'terraform')
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(show)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a logger of nil' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show(logger: nil)
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(show)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdin of nil' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show(stdin: nil)
+
+        helper = described_class.new
+        helper.execute(required_parameters)
+
+        expect(show)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stderr of nil' do
+        stub_ruby_terraform_init
+        stub_ruby_terraform_plan
+        show = stub_ruby_terraform_show(stderr: nil)
 
         helper = described_class.new
         helper.execute(required_parameters)
@@ -674,6 +807,168 @@ describe RSpec::Terraform::Helpers::Plan do
       show = stub_ruby_terraform_show(binary: 'path/to/binary')
 
       helper = described_class.new(binary: 'path/to/binary')
+      helper.execute(required_parameters)
+
+      expect(show)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when logger overridden' do
+    it 'inits using the specified logger' do
+      logger = instance_double(Logger)
+
+      init = stub_ruby_terraform_init(logger: logger)
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
+
+      helper = described_class.new(logger: logger)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'plans using the specified logger' do
+      logger = instance_double(Logger)
+
+      stub_ruby_terraform_init
+      plan = stub_ruby_terraform_plan(logger: logger)
+      stub_ruby_terraform_show
+
+      helper = described_class.new(logger: logger)
+      helper.execute(required_parameters)
+
+      expect(plan)
+        .to(have_received(:execute))
+    end
+
+    it 'shows using the specified logger' do
+      logger = instance_double(Logger)
+
+      stub_ruby_terraform_init
+      stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show(logger: logger)
+
+      helper = described_class.new(logger: logger)
+      helper.execute(required_parameters)
+
+      expect(show)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stdin overridden' do
+    it 'inits using the specified stdin' do
+      stdin = StringIO.new
+
+      init = stub_ruby_terraform_init(stdin: stdin)
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
+
+      helper = described_class.new(stdin: stdin)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'plans using the specified stdin' do
+      stdin = StringIO.new
+
+      stub_ruby_terraform_init
+      plan = stub_ruby_terraform_plan(stdin: stdin)
+      stub_ruby_terraform_show
+
+      helper = described_class.new(stdin: stdin)
+      helper.execute(required_parameters)
+
+      expect(plan)
+        .to(have_received(:execute))
+    end
+
+    it 'shows using the specified stdin' do
+      stdin = StringIO.new
+
+      stub_ruby_terraform_init
+      stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show(stdin: stdin)
+
+      helper = described_class.new(stdin: stdin)
+      helper.execute(required_parameters)
+
+      expect(show)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stdout overridden' do
+    it 'inits using the specified stdout' do
+      stdout = StringIO.new
+
+      init = stub_ruby_terraform_init(stdout: stdout)
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
+
+      helper = described_class.new(stdout: stdout)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'plans using the specified stdout' do
+      stdout = StringIO.new
+
+      stub_ruby_terraform_init
+      plan = stub_ruby_terraform_plan(stdout: stdout)
+      stub_ruby_terraform_show
+
+      helper = described_class.new(stdout: stdout)
+      helper.execute(required_parameters)
+
+      expect(plan)
+        .to(have_received(:execute))
+    end
+  end
+
+  context 'when stderr overridden' do
+    it 'inits using the specified stderr' do
+      stderr = StringIO.new
+
+      init = stub_ruby_terraform_init(stderr: stderr)
+      stub_ruby_terraform_plan
+      stub_ruby_terraform_show
+
+      helper = described_class.new(stderr: stderr)
+      helper.execute(required_parameters)
+
+      expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'plans using the specified stderr' do
+      stderr = StringIO.new
+
+      stub_ruby_terraform_init
+      plan = stub_ruby_terraform_plan(stderr: stderr)
+      stub_ruby_terraform_show
+
+      helper = described_class.new(stderr: stderr)
+      helper.execute(required_parameters)
+
+      expect(plan)
+        .to(have_received(:execute))
+    end
+
+    it 'shows using the specified stderr' do
+      stderr = StringIO.new
+
+      stub_ruby_terraform_init
+      stub_ruby_terraform_plan
+      show = stub_ruby_terraform_show(stderr: stderr)
+
+      helper = described_class.new(stderr: stderr)
       helper.execute(required_parameters)
 
       expect(show)
@@ -1219,7 +1514,7 @@ describe RSpec::Terraform::Helpers::Plan do
     allow(init).to(receive(:execute))
 
     expectation = receive(:new)
-    expectation = expectation.with(opts) if opts
+    expectation = expectation.with(hash_including(opts)) if opts
     expectation = expectation.and_return(init)
     allow(RubyTerraform::Commands::Init).to(expectation)
 
@@ -1231,7 +1526,7 @@ describe RSpec::Terraform::Helpers::Plan do
     allow(plan).to(receive(:execute))
 
     expectation = receive(:new)
-    expectation = expectation.with(opts) if opts
+    expectation = expectation.with(hash_including(opts)) if opts
     expectation = expectation.and_return(plan)
     allow(RubyTerraform::Commands::Plan).to(expectation)
 

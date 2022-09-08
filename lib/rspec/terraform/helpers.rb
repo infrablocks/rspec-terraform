@@ -46,6 +46,10 @@ module RSpec
 
         {
           binary: config.terraform_binary,
+          logger: config.terraform_logger,
+          stdin: config.terraform_stdin,
+          stdout: config.terraform_stdout,
+          stderr: config.terraform_stderr,
           execution_mode: config.terraform_execution_mode,
           configuration_provider: config.terraform_configuration_provider
         }

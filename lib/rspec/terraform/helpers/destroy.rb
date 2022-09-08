@@ -9,13 +9,23 @@ module RSpec
     module Helpers
       class Destroy
         attr_reader(
-          :configuration_provider, :binary, :execution_mode
+          :configuration_provider,
+          :binary,
+          :logger,
+          :stdin,
+          :stdout,
+          :stderr,
+          :execution_mode
         )
 
         def initialize(opts = {})
           @configuration_provider =
             opts[:configuration_provider] || Configuration.identity_provider
           @binary = opts[:binary] || 'terraform'
+          @logger = opts[:logger]
+          @stdin = opts[:stdin]
+          @stdout = opts[:stdout]
+          @stderr = opts[:stderr]
           @execution_mode = opts[:execution_mode] || :in_place
         end
 
@@ -89,19 +99,18 @@ module RSpec
         end
 
         def init_command
-          RubyTerraform::Commands::Init.new(binary: binary)
+          RubyTerraform::Commands::Init.new(command_options)
         end
 
         def destroy_command
-          RubyTerraform::Commands::Destroy.new(binary: binary)
+          RubyTerraform::Commands::Destroy.new(command_options)
         end
 
         def init_parameters(parameters)
-          init_parameters =
-            parameters.merge(
-              chdir: parameters[:configuration_directory],
-              input: false
-            )
+          init_parameters = parameters.merge(
+            chdir: parameters[:configuration_directory],
+            input: false
+          )
           if execution_mode == :isolated
             init_parameters =
               init_parameters.merge(from_module: parameters[:source_directory])
@@ -127,6 +136,16 @@ module RSpec
           destroy_parameters
         end
         # rubocop:enable Metrics/MethodLength
+
+        def command_options
+          {
+            binary: binary,
+            logger: logger,
+            stdin: stdin,
+            stdout: stdout,
+            stderr: stderr
+          }
+        end
       end
     end
   end
