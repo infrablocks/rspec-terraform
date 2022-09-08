@@ -45,7 +45,7 @@ describe RSpec::Terraform::Logging do
         .to(include('less important log message'))
     end
 
-    context 'when streams includes :standard' do
+    context 'when streams includes only :standard' do
       it 'creates a logger that logs to $stdout when stdout not provided' do
         expect do
           streams = described_class.resolve_streams(streams: [:standard])
@@ -67,12 +67,44 @@ describe RSpec::Terraform::Logging do
         expect(stdout.string)
           .to(include('important log message'))
       end
+
+      it 'does not make the log file directory when file path provided' do
+        file_path = 'some/path/to/file'
+
+        allow(FileUtils).to(receive(:mkdir_p))
+
+        described_class.resolve_streams(
+          streams: [:standard],
+          file_path: file_path
+        )
+
+        expect(FileUtils)
+          .not_to(have_received(:mkdir_p)
+                .with('some/path/to'))
+      end
     end
 
     context 'when streams includes :file' do
       it 'raises an error when no file path provided' do
         expect { described_class.resolve_streams(streams: [:file]) }
           .to(raise_error(ArgumentError))
+      end
+
+      it 'makes the log file directory when file path provided' do
+        file = StringIO.new
+        file_path = 'some/path/to/file'
+
+        allow(File).to(receive(:open).and_return(file))
+        allow(FileUtils).to(receive(:mkdir_p))
+
+        described_class.resolve_streams(
+          streams: [:file],
+          file_path: file_path
+        )
+
+        expect(FileUtils)
+          .to(have_received(:mkdir_p)
+                .with('some/path/to'))
       end
 
       it 'creates a logger that logs to the specified file when file path ' \
@@ -84,6 +116,7 @@ describe RSpec::Terraform::Logging do
           .to(receive(:open)
                 .with(file_path, anything)
                 .and_return(file))
+        allow(FileUtils).to(receive(:mkdir_p))
 
         streams = described_class.resolve_streams(
           streams: [:file],
@@ -107,6 +140,7 @@ describe RSpec::Terraform::Logging do
           .to(receive(:open)
                 .with(file_path, anything)
                 .and_return(file))
+        allow(FileUtils).to(receive(:mkdir_p))
 
         streams = described_class.resolve_streams(
           streams: %i[file standard],
@@ -173,6 +207,7 @@ describe RSpec::Terraform::Logging do
           .to(receive(:open)
                 .with(file_path, anything)
                 .and_return(file))
+        allow(FileUtils).to(receive(:mkdir_p))
 
         streams = described_class.resolve_streams(
           streams: [:file],
@@ -195,6 +230,7 @@ describe RSpec::Terraform::Logging do
           .to(receive(:open)
                 .with(file_path, anything)
                 .and_return(file))
+        allow(FileUtils).to(receive(:mkdir_p))
 
         expect do
           streams = described_class.resolve_streams(
@@ -247,6 +283,7 @@ describe RSpec::Terraform::Logging do
           .to(receive(:open)
                 .with(file_path, anything)
                 .and_return(file))
+        allow(FileUtils).to(receive(:mkdir_p))
 
         streams = described_class.resolve_streams(
           streams: [:file],
@@ -269,6 +306,7 @@ describe RSpec::Terraform::Logging do
           .to(receive(:open)
                 .with(file_path, anything)
                 .and_return(file))
+        allow(FileUtils).to(receive(:mkdir_p))
 
         expect do
           streams = described_class.resolve_streams(

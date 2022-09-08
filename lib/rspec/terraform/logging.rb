@@ -66,11 +66,32 @@ module RSpec
         end
 
         def devices(opts)
+          streams = opts[:streams]
+          file_path = opts[:file_path]
+          stdout = opts[:stdout]
+
           {
-            file: log_device(opts[:file_path] || File::NULL),
-            stdout: log_device(opts[:stdout] || $stdout),
-            stderr: log_device($stderr)
+            file: log_device(resolve_file_path(file_path, streams)),
+            stdout: log_device(resolved_stdout(stdout)),
+            stderr: log_device(resolved_stderr)
           }
+        end
+
+        def resolve_file_path(file_path, streams)
+          resolved_file_path = File::NULL
+          if streams.include?(:file) && file_path
+            FileUtils.mkdir_p(File.dirname(file_path))
+            resolved_file_path = file_path
+          end
+          resolved_file_path
+        end
+
+        def resolved_stdout(stdout)
+          stdout || $stdout
+        end
+
+        def resolved_stderr
+          $stderr
         end
 
         def log_device(io)
