@@ -964,6 +964,82 @@ describe RSpec::Terraform::Helpers::Apply do
     end
   end
 
+  context 'when only_if provided' do
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'does not execute terraform commands when only_if with no arguments ' \
+       'returns false' do
+      init = stub_ruby_terraform_init
+      apply = stub_ruby_terraform_apply
+
+      helper = described_class.new
+      helper.execute(
+        required_parameters
+          .merge(only_if: -> { false })
+      )
+
+      expect(init).not_to(have_received(:execute))
+      expect(apply).not_to(have_received(:execute))
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'does not execute terraform commands when only_if with parameters ' \
+       'argument returns false' do
+      init = stub_ruby_terraform_init
+      apply = stub_ruby_terraform_apply
+
+      helper = described_class.new
+      helper.execute(
+        required_parameters
+          .merge(
+            some_condition: false,
+            only_if: ->(parameters) { parameters[:some_condition] }
+          )
+      )
+
+      expect(init).not_to(have_received(:execute))
+      expect(apply).not_to(have_received(:execute))
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'executes terraform commands when only_if with no arguments ' \
+       'returns true' do
+      init = stub_ruby_terraform_init
+      apply = stub_ruby_terraform_apply
+
+      helper = described_class.new
+      helper.execute(
+        required_parameters
+          .merge(only_if: -> { true })
+      )
+
+      expect(init).to(have_received(:execute))
+      expect(apply).to(have_received(:execute))
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'executes terraform commands when only_if with parameters ' \
+       'returns true' do
+      init = stub_ruby_terraform_init
+      apply = stub_ruby_terraform_apply
+
+      helper = described_class.new
+      helper.execute(
+        required_parameters
+          .merge(
+            some_condition: true,
+            only_if: ->(parameters) { parameters[:some_condition] }
+          )
+      )
+
+      expect(init).to(have_received(:execute))
+      expect(apply).to(have_received(:execute))
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+  end
+
   def required_parameters(execution_mode: :in_place)
     {
       in_place: { configuration_directory: 'path/to/configuration' },

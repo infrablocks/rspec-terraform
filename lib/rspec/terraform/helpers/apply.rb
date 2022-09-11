@@ -35,14 +35,23 @@ module RSpec
           parameters = with_resolved_vars(parameters, &block)
           parameters = with_mandatory_parameters(parameters)
 
-          ensure_required_parameters(parameters)
-
-          clean(parameters)
-          init(parameters)
-          apply(parameters)
+          execute_if_required(parameters) do
+            validate(parameters)
+            clean(parameters)
+            init(parameters)
+            apply(parameters)
+          end
         end
 
         private
+
+        def execute_if_required(parameters, &block)
+          only_if = parameters[:only_if]
+          only_if_args = only_if ? [parameters].slice(0, only_if.arity) : []
+          should_execute = only_if ? only_if.call(*only_if_args) : true
+
+          block.call if should_execute
+        end
 
         def with_configuration_provider_parameters(parameters)
           configuration_provider.resolve(parameters)
@@ -70,16 +79,6 @@ module RSpec
           }[execution_mode] || []
         end
 
-        def ensure_required_parameters(parameters)
-          missing_parameters =
-            required_parameters(execution_mode)
-              .filter { |parameter| parameters[parameter].nil? }
-
-          return if missing_parameters.empty?
-
-          raise_missing_parameters(missing_parameters)
-        end
-
         def raise_missing_parameters(parameters)
           parameters = parameters.collect { |parameter| "`:#{parameter}`" }
           if parameters.count == 1
@@ -90,6 +89,16 @@ module RSpec
             raise StandardError,
                   "Required parameters: #{parameters} missing."
           end
+        end
+
+        def validate(parameters)
+          missing_parameters =
+            required_parameters(execution_mode)
+              .filter { |parameter| parameters[parameter].nil? }
+
+          return if missing_parameters.empty?
+
+          raise_missing_parameters(missing_parameters)
         end
 
         def clean(parameters)
