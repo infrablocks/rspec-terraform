@@ -8,8 +8,7 @@ module RSpec
     module Helpers
       class Var < Base
         def execute(overrides = {}, &block)
-          parameters = with_configuration_provider_parameters(overrides)
-          parameters = with_resolved_vars(parameters, &block)
+          parameters = resolve_parameters(overrides, &block)
 
           parameters[:vars][parameters[:name].to_sym]
         end
