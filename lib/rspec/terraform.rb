@@ -13,7 +13,6 @@ require_relative 'terraform/logging'
 # TODO
 # ====
 #
-# * Test session
 # * Before support in matchers
 # * Reference support in matchers
 # * Sensitive support in matchers

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative './actions'
 require_relative './parameters'
 
 module RSpec
@@ -8,7 +7,6 @@ module RSpec
     module Helpers
       class Base
         include Parameters
-        include Actions
 
         attr_reader(
           :configuration_provider,

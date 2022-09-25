@@ -3,11 +3,18 @@
 require 'ruby_terraform'
 
 require_relative './base'
+require_relative './actions'
 
 module RSpec
   module Terraform
     module Helpers
       class Apply < Base
+        include Actions::ExecuteIfRequired
+        include Actions::Validate
+        include Actions::Clean
+        include Actions::Init
+        include Actions::Apply
+
         def execute(overrides = {}, &block)
           parameters = resolve_parameters(overrides, &block)
 

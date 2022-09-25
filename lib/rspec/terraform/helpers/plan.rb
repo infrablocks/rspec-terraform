@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
-require 'ruby_terraform'
-require 'securerandom'
-require 'stringio'
-
 require_relative './base'
+require_relative './actions'
 
 module RSpec
   module Terraform
     module Helpers
       class Plan < Base
+        include Actions::Validate
+        include Actions::Clean
+        include Actions::Init
+        include Actions::Plan
+        include Actions::Show
+        include Actions::Remove
+
         def execute(overrides = {}, &block)
           parameters = resolve_parameters(overrides, &block)
 
