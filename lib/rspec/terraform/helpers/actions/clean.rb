@@ -8,8 +8,27 @@ module RSpec
           def clean(parameters)
             return unless execution_mode == :isolated
 
-            FileUtils.rm_rf(parameters[:configuration_directory])
-            FileUtils.mkdir_p(parameters[:configuration_directory])
+            configuration_directory = parameters[:configuration_directory]
+
+            log_clean_starting(configuration_directory)
+
+            FileUtils.rm_rf(configuration_directory)
+            FileUtils.mkdir_p(configuration_directory)
+
+            log_clean_complete
+          end
+
+          private
+
+          def log_clean_starting(configuration_directory)
+            logger&.info(
+              'Cleaning configuration directory: ' \
+              "'#{configuration_directory}'..."
+            )
+          end
+
+          def log_clean_complete
+            logger&.info('Clean complete.')
           end
         end
       end

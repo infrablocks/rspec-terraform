@@ -12,10 +12,32 @@ module RSpec
           include CommandInstantiation
 
           def destroy(parameters)
-            destroy_command.execute(destroy_parameters(parameters))
+            parameters = destroy_parameters(parameters)
+
+            log_destroy_starting(parameters)
+            log_destroy_using_parameters(parameters)
+
+            destroy_command.execute(parameters)
+
+            log_destroy_complete
           end
 
           private
+
+          def log_destroy_starting(parameters)
+            logger&.info(
+              'Destroying for configuration in directory: ' \
+              "'#{parameters[:chdir]}'..."
+            )
+          end
+
+          def log_destroy_using_parameters(parameters)
+            logger&.debug("Destroying using parameters: #{parameters}...")
+          end
+
+          def log_destroy_complete
+            logger&.info('Destroy complete.')
+          end
 
           def destroy_command
             instantiate_command(RubyTerraform::Commands::Destroy)
@@ -28,16 +50,23 @@ module RSpec
           end
 
           def with_destroy_standard_parameters(parameters)
-            parameters.merge(
-              chdir: parameters[:configuration_directory],
-              input: false,
-              auto_approve: true
-            )
+            configuration_directory = parameters[:configuration_directory]
+
+            parameters
+              .except(:configuration_directory)
+              .merge(
+                chdir: configuration_directory,
+                input: false,
+                auto_approve: true
+              )
           end
 
           def with_destroy_state_file_parameters(parameters)
-            if parameters[:state_file]
-              return parameters.merge(state: parameters[:state_file])
+            state_file = parameters[:state_file]
+            if state_file
+              return parameters
+                       .except(:state_file)
+                       .merge(state: state_file)
             end
 
             parameters

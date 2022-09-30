@@ -18,7 +18,7 @@ module RSpec
         def execute(overrides = {}, &block)
           parameters = resolve_parameters(overrides, &block)
 
-          execute_if_required(parameters) do
+          execute_if_required(:destroy, parameters) do
             validate(parameters)
             clean(parameters)
             init(parameters)

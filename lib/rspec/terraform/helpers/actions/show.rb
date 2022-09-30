@@ -13,13 +13,36 @@ module RSpec
           include CommandInstantiation
 
           def show(parameters, plan_file)
+            parameters = show_parameters(parameters, plan_file)
+
+            log_show_starting(parameters, plan_file)
+            log_show_using_parameters(parameters)
+
             stdout = StringIO.new
             show_command(stdout: stdout)
-              .execute(show_parameters(parameters, plan_file))
+              .execute(parameters)
+
+            log_show_complete
+
             stdout.string
           end
 
           private
+
+          def log_show_starting(parameters, plan_file)
+            logger&.info(
+              "Showing file: '#{plan_file}' in configuration directory: " \
+              "'#{parameters[:chdir]}'..."
+            )
+          end
+
+          def log_show_using_parameters(parameters)
+            logger&.debug("Showing using parameters: #{parameters}...")
+          end
+
+          def log_show_complete
+            logger&.info('Show complete.')
+          end
 
           def show_command(opts = {})
             instantiate_command(RubyTerraform::Commands::Show, opts)
@@ -33,11 +56,15 @@ module RSpec
           end
 
           def with_show_standard_parameters(parameters)
-            parameters.merge(
-              chdir: parameters[:configuration_directory],
-              no_color: true,
-              json: true
-            )
+            configuration_directory = parameters[:configuration_directory]
+
+            parameters
+              .except(:configuration_directory)
+              .merge(
+                chdir: configuration_directory,
+                no_color: true,
+                json: true
+              )
           end
 
           def with_show_plan_file_parameters(parameters, plan_file)

@@ -15,7 +15,7 @@ describe RSpec::Terraform::Helpers::Output do
     init = stub_ruby_terraform_init
     output = stub_ruby_terraform_output
 
-    helper = described_class.new
+    helper = described_class_instance
     helper.execute(required_parameters)
 
     expect(init).to(have_received(:execute).ordered)
@@ -35,7 +35,7 @@ describe RSpec::Terraform::Helpers::Output do
     allow(output_command)
       .to(receive(:execute) { opts[:stdout].write(JSON.dump(output_value)) })
 
-    helper = described_class.new
+    helper = described_class_instance
     plan = helper.execute(required_parameters)
 
     expect(plan).to(eq(output_value))
@@ -49,7 +49,7 @@ describe RSpec::Terraform::Helpers::Output do
       parameters = required_parameters
       parameters.delete(:configuration_directory)
 
-      helper = described_class.new
+      helper = described_class_instance
 
       expect { helper.execute(parameters) }
         .to(raise_error(
@@ -65,7 +65,7 @@ describe RSpec::Terraform::Helpers::Output do
       parameters = required_parameters
       parameters.delete(:name)
 
-      helper = described_class.new
+      helper = described_class_instance
 
       expect { helper.execute(parameters) }
         .to(raise_error(
@@ -80,7 +80,7 @@ describe RSpec::Terraform::Helpers::Output do
       stub_ruby_terraform_init
       stub_ruby_terraform_output
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(required_parameters)
 
       expect(FileUtils).not_to(have_received(:rm_rf))
@@ -93,7 +93,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -105,7 +105,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -123,7 +123,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -139,7 +139,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init(binary: 'terraform')
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -161,7 +161,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init(stdin: nil)
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -172,7 +172,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init(stdout: nil)
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -183,7 +183,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init(stderr: nil)
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -196,7 +196,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(output)
@@ -208,7 +208,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(output)
@@ -220,7 +220,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(output)
@@ -232,7 +232,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -250,7 +250,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output(binary: 'terraform')
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(output)
@@ -261,7 +261,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output(logger: nil)
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(output)
@@ -272,7 +272,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output(stdin: nil)
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(output)
@@ -283,7 +283,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output(stderr: nil)
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(output)
@@ -300,7 +300,7 @@ describe RSpec::Terraform::Helpers::Output do
       parameters = required_parameters(execution_mode: :in_place)
       parameters.delete(:configuration_directory)
 
-      helper = described_class.new(execution_mode: :in_place)
+      helper = described_class_instance(execution_mode: :in_place)
 
       expect { helper.execute(parameters) }
         .to(raise_error(
@@ -316,7 +316,7 @@ describe RSpec::Terraform::Helpers::Output do
       parameters = required_parameters(execution_mode: :in_place)
       parameters.delete(:name)
 
-      helper = described_class.new(execution_mode: :in_place)
+      helper = described_class_instance(execution_mode: :in_place)
 
       expect { helper.execute(parameters) }
         .to(raise_error(
@@ -331,7 +331,7 @@ describe RSpec::Terraform::Helpers::Output do
       stub_ruby_terraform_init
       stub_ruby_terraform_output
 
-      helper = described_class.new(execution_mode: :in_place)
+      helper = described_class_instance(execution_mode: :in_place)
       helper.execute(
         required_parameters(execution_mode: :in_place)
       )
@@ -346,7 +346,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new(execution_mode: :in_place)
+        helper = described_class_instance(execution_mode: :in_place)
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -364,7 +364,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new(execution_mode: :in_place)
+        helper = described_class_instance(execution_mode: :in_place)
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -382,7 +382,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new(execution_mode: :in_place)
+        helper = described_class_instance(execution_mode: :in_place)
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -406,7 +406,7 @@ describe RSpec::Terraform::Helpers::Output do
       parameters = required_parameters(execution_mode: :isolated)
       parameters.delete(:configuration_directory)
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
 
       expect { helper.execute(parameters) }
         .to(raise_error(
@@ -422,7 +422,7 @@ describe RSpec::Terraform::Helpers::Output do
       parameters = required_parameters(execution_mode: :isolated)
       parameters.delete(:source_directory)
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
 
       expect { helper.execute(parameters) }
         .to(raise_error(
@@ -438,7 +438,7 @@ describe RSpec::Terraform::Helpers::Output do
       parameters = required_parameters(execution_mode: :isolated)
       parameters.delete(:name)
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
 
       expect { helper.execute(parameters) }
         .to(raise_error(
@@ -451,7 +451,7 @@ describe RSpec::Terraform::Helpers::Output do
       stub_ruby_terraform_init
       stub_ruby_terraform_output
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
 
       expect { helper.execute }
         .to(raise_error(
@@ -467,7 +467,7 @@ describe RSpec::Terraform::Helpers::Output do
       init = stub_ruby_terraform_init
       output = stub_ruby_terraform_output
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
       helper.execute(
         required_parameters(execution_mode: :isolated)
           .merge(configuration_directory: 'path/to/destination/configuration')
@@ -491,7 +491,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new(execution_mode: :isolated)
+        helper = described_class_instance(execution_mode: :isolated)
         helper.execute(
           required_parameters.merge(
             source_directory: 'path/to/source/configuration',
@@ -511,7 +511,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new(execution_mode: :isolated)
+        helper = described_class_instance(execution_mode: :isolated)
         helper.execute(
           required_parameters.merge(
             source_directory: 'path/to/source/configuration',
@@ -532,7 +532,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new(execution_mode: :isolated)
+        helper = described_class_instance(execution_mode: :isolated)
         helper.execute(
           required_parameters.merge(
             source_directory: 'path/to/source/configuration',
@@ -554,7 +554,7 @@ describe RSpec::Terraform::Helpers::Output do
       init = stub_ruby_terraform_init(binary: 'path/to/binary')
       stub_ruby_terraform_output
 
-      helper = described_class.new(binary: 'path/to/binary')
+      helper = described_class_instance(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(init)
@@ -565,7 +565,7 @@ describe RSpec::Terraform::Helpers::Output do
       stub_ruby_terraform_init
       output = stub_ruby_terraform_output(binary: 'path/to/binary')
 
-      helper = described_class.new(binary: 'path/to/binary')
+      helper = described_class_instance(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(output)
@@ -575,12 +575,12 @@ describe RSpec::Terraform::Helpers::Output do
 
   context 'when logger overridden' do
     it 'inits using the specified logger' do
-      logger = instance_double(Logger)
+      logger = logger_double
 
       init = stub_ruby_terraform_init(logger: logger)
       stub_ruby_terraform_output
 
-      helper = described_class.new(logger: logger)
+      helper = described_class_instance(logger: logger)
       helper.execute(required_parameters)
 
       expect(init)
@@ -588,12 +588,12 @@ describe RSpec::Terraform::Helpers::Output do
     end
 
     it 'applies using the specified logger' do
-      logger = instance_double(Logger)
+      logger = logger_double
 
       stub_ruby_terraform_init
       output = stub_ruby_terraform_output(logger: logger)
 
-      helper = described_class.new(logger: logger)
+      helper = described_class_instance(logger: logger)
       helper.execute(required_parameters)
 
       expect(output)
@@ -608,7 +608,7 @@ describe RSpec::Terraform::Helpers::Output do
       init = stub_ruby_terraform_init(stdin: stdin)
       stub_ruby_terraform_output
 
-      helper = described_class.new(stdin: stdin)
+      helper = described_class_instance(stdin: stdin)
       helper.execute(required_parameters)
 
       expect(init)
@@ -621,7 +621,7 @@ describe RSpec::Terraform::Helpers::Output do
       stub_ruby_terraform_init
       output = stub_ruby_terraform_output(stdin: stdin)
 
-      helper = described_class.new(stdin: stdin)
+      helper = described_class_instance(stdin: stdin)
       helper.execute(required_parameters)
 
       expect(output)
@@ -636,7 +636,7 @@ describe RSpec::Terraform::Helpers::Output do
       init = stub_ruby_terraform_init(stdout: stdout)
       stub_ruby_terraform_output
 
-      helper = described_class.new(stdout: stdout)
+      helper = described_class_instance(stdout: stdout)
       helper.execute(required_parameters)
 
       expect(init)
@@ -651,7 +651,7 @@ describe RSpec::Terraform::Helpers::Output do
       init = stub_ruby_terraform_init(stderr: stderr)
       stub_ruby_terraform_output
 
-      helper = described_class.new(stderr: stderr)
+      helper = described_class_instance(stderr: stderr)
       helper.execute(required_parameters)
 
       expect(init)
@@ -664,7 +664,7 @@ describe RSpec::Terraform::Helpers::Output do
       stub_ruby_terraform_init
       output = stub_ruby_terraform_output(stderr: stderr)
 
-      helper = described_class.new(stderr: stderr)
+      helper = described_class_instance(stderr: stderr)
       helper.execute(required_parameters)
 
       expect(output)
@@ -678,7 +678,7 @@ describe RSpec::Terraform::Helpers::Output do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -698,7 +698,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             configuration_directory: 'path/to/terraform/configuration'
@@ -716,7 +716,7 @@ describe RSpec::Terraform::Helpers::Output do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             state_file: 'path/to/terraform/state'
@@ -747,7 +747,7 @@ describe RSpec::Terraform::Helpers::Output do
             )
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -778,7 +778,7 @@ describe RSpec::Terraform::Helpers::Output do
             in_memory_configuration
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute(override_configuration)
@@ -803,7 +803,7 @@ describe RSpec::Terraform::Helpers::Output do
             )
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -826,7 +826,7 @@ describe RSpec::Terraform::Helpers::Output do
             )
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -849,7 +849,7 @@ describe RSpec::Terraform::Helpers::Output do
             )
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -880,7 +880,7 @@ describe RSpec::Terraform::Helpers::Output do
             in_memory_configuration
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute(override_configuration)
@@ -894,6 +894,17 @@ describe RSpec::Terraform::Helpers::Output do
                       )))
       end
     end
+  end
+
+  def logger_double
+    logger = instance_double(Logger)
+    allow(logger).to(receive(:info))
+    allow(logger).to(receive(:debug))
+    logger
+  end
+
+  def described_class_instance(opts = {})
+    described_class.new(opts)
   end
 
   # rubocop:disable Metrics/MethodLength

@@ -15,7 +15,7 @@ describe RSpec::Terraform::Helpers::Destroy do
     init = stub_ruby_terraform_init
     destroy = stub_ruby_terraform_destroy
 
-    helper = described_class.new
+    helper = described_class_instance
     helper.execute(required_parameters)
 
     expect(init).to(have_received(:execute).ordered)
@@ -28,7 +28,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
 
       expect { helper.execute }
         .to(raise_error(
@@ -43,7 +43,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(required_parameters)
 
       expect(FileUtils).not_to(have_received(:rm_rf))
@@ -56,7 +56,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -68,7 +68,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -84,7 +84,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -98,7 +98,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init(binary: 'terraform')
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -120,7 +120,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init(stdin: nil)
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -131,7 +131,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init(stdout: nil)
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -142,7 +142,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init(stderr: nil)
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(init)
@@ -155,7 +155,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -167,7 +167,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -179,7 +179,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -191,7 +191,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -207,7 +207,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy(binary: 'terraform')
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -218,7 +218,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy(logger: nil)
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -229,7 +229,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy(stdin: nil)
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -240,7 +240,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy(stdout: nil)
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -251,7 +251,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy(stderr: nil)
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(required_parameters)
 
         expect(destroy)
@@ -265,7 +265,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(execution_mode: :in_place)
+      helper = described_class_instance(execution_mode: :in_place)
 
       expect { helper.execute }
         .to(raise_error(
@@ -280,7 +280,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(execution_mode: :in_place)
+      helper = described_class_instance(execution_mode: :in_place)
       helper.execute(
         required_parameters(execution_mode: :in_place)
       )
@@ -295,7 +295,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new(execution_mode: :in_place)
+        helper = described_class_instance(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -311,7 +311,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new(execution_mode: :in_place)
+        helper = described_class_instance(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -327,7 +327,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new(execution_mode: :in_place)
+        helper = described_class_instance(execution_mode: :in_place)
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -346,7 +346,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
 
       expect do
         helper.execute(
@@ -362,7 +362,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
 
       expect do
         helper.execute(
@@ -378,7 +378,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
 
       expect { helper.execute }
         .to(raise_error(
@@ -394,7 +394,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new(execution_mode: :isolated)
+      helper = described_class_instance(execution_mode: :isolated)
       helper.execute(
         required_parameters(execution_mode: :isolated)
           .merge(configuration_directory: 'path/to/destination/configuration')
@@ -418,7 +418,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new(execution_mode: :isolated)
+        helper = described_class_instance(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -436,7 +436,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new(execution_mode: :isolated)
+        helper = described_class_instance(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -455,7 +455,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new(execution_mode: :isolated)
+        helper = described_class_instance(execution_mode: :isolated)
         helper.execute(
           source_directory: 'path/to/source/configuration',
           configuration_directory: 'path/to/destination/configuration'
@@ -475,7 +475,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init(binary: 'path/to/binary')
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(binary: 'path/to/binary')
+      helper = described_class_instance(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(init)
@@ -486,7 +486,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy(binary: 'path/to/binary')
 
-      helper = described_class.new(binary: 'path/to/binary')
+      helper = described_class_instance(binary: 'path/to/binary')
       helper.execute(required_parameters)
 
       expect(destroy)
@@ -496,12 +496,12 @@ describe RSpec::Terraform::Helpers::Destroy do
 
   context 'when logger overridden' do
     it 'inits using the specified logger' do
-      logger = instance_double(Logger)
+      logger = logger_double
 
       init = stub_ruby_terraform_init(logger: logger)
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(logger: logger)
+      helper = described_class_instance(logger: logger)
       helper.execute(required_parameters)
 
       expect(init)
@@ -509,12 +509,12 @@ describe RSpec::Terraform::Helpers::Destroy do
     end
 
     it 'applies using the specified logger' do
-      logger = instance_double(Logger)
+      logger = logger_double
 
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy(logger: logger)
 
-      helper = described_class.new(logger: logger)
+      helper = described_class_instance(logger: logger)
       helper.execute(required_parameters)
 
       expect(destroy)
@@ -529,7 +529,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init(stdin: stdin)
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(stdin: stdin)
+      helper = described_class_instance(stdin: stdin)
       helper.execute(required_parameters)
 
       expect(init)
@@ -542,7 +542,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy(stdin: stdin)
 
-      helper = described_class.new(stdin: stdin)
+      helper = described_class_instance(stdin: stdin)
       helper.execute(required_parameters)
 
       expect(destroy)
@@ -557,7 +557,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init(stdout: stdout)
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(stdout: stdout)
+      helper = described_class_instance(stdout: stdout)
       helper.execute(required_parameters)
 
       expect(init)
@@ -570,7 +570,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy(stdout: stdout)
 
-      helper = described_class.new(stdout: stdout)
+      helper = described_class_instance(stdout: stdout)
       helper.execute(required_parameters)
 
       expect(destroy)
@@ -585,7 +585,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init(stderr: stderr)
       stub_ruby_terraform_destroy
 
-      helper = described_class.new(stderr: stderr)
+      helper = described_class_instance(stderr: stderr)
       helper.execute(required_parameters)
 
       expect(init)
@@ -598,7 +598,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy(stderr: stderr)
 
-      helper = described_class.new(stderr: stderr)
+      helper = described_class_instance(stderr: stderr)
       helper.execute(required_parameters)
 
       expect(destroy)
@@ -612,7 +612,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         init = stub_ruby_terraform_init
         stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -630,7 +630,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           configuration_directory: 'path/to/terraform/configuration'
         )
@@ -646,7 +646,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             state_file: 'path/to/terraform/state'
@@ -664,7 +664,7 @@ describe RSpec::Terraform::Helpers::Destroy do
         stub_ruby_terraform_init
         destroy = stub_ruby_terraform_destroy
 
-        helper = described_class.new
+        helper = described_class_instance
         helper.execute(
           required_parameters.merge(
             vars: {
@@ -697,7 +697,7 @@ describe RSpec::Terraform::Helpers::Destroy do
             configuration_directory: 'provided/terraform/configuration'
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -724,7 +724,7 @@ describe RSpec::Terraform::Helpers::Destroy do
             in_memory_configuration
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute(override_configuration)
@@ -747,7 +747,7 @@ describe RSpec::Terraform::Helpers::Destroy do
             configuration_directory: 'provided/terraform/configuration'
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -770,7 +770,7 @@ describe RSpec::Terraform::Helpers::Destroy do
             )
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -796,7 +796,7 @@ describe RSpec::Terraform::Helpers::Destroy do
             )
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute
@@ -836,7 +836,7 @@ describe RSpec::Terraform::Helpers::Destroy do
             in_memory_configuration
           )
 
-        helper = described_class.new(
+        helper = described_class_instance(
           configuration_provider: configuration_provider
         )
         helper.execute(override_configuration)
@@ -861,7 +861,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(required_parameters) do |vars|
         vars.first = 1
         vars.second = 2
@@ -881,7 +881,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(
         required_parameters.merge(
           vars: {
@@ -908,7 +908,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(
         required_parameters.merge(
           vars: {
@@ -944,7 +944,7 @@ describe RSpec::Terraform::Helpers::Destroy do
           }
         )
 
-      helper = described_class.new(
+      helper = described_class_instance(
         configuration_provider: configuration_provider
       )
       helper.execute(required_parameters) do |vars|
@@ -971,7 +971,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(
         required_parameters
           .merge(only_if: -> { false })
@@ -988,7 +988,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(
         required_parameters
           .merge(
@@ -1008,7 +1008,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(
         required_parameters
           .merge(only_if: -> { true })
@@ -1025,7 +1025,7 @@ describe RSpec::Terraform::Helpers::Destroy do
       init = stub_ruby_terraform_init
       destroy = stub_ruby_terraform_destroy
 
-      helper = described_class.new
+      helper = described_class_instance
       helper.execute(
         required_parameters
           .merge(
@@ -1038,6 +1038,17 @@ describe RSpec::Terraform::Helpers::Destroy do
       expect(destroy).to(have_received(:execute))
     end
     # rubocop:enable RSpec/MultipleExpectations
+  end
+
+  def logger_double
+    logger = instance_double(Logger)
+    allow(logger).to(receive(:info))
+    allow(logger).to(receive(:debug))
+    logger
+  end
+
+  def described_class_instance(opts = {})
+    described_class.new(opts)
   end
 
   def required_parameters(execution_mode: :in_place)

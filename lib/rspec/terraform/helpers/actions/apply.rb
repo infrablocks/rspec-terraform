@@ -12,10 +12,32 @@ module RSpec
           include CommandInstantiation
 
           def apply(parameters)
-            apply_command.execute(apply_parameters(parameters))
+            parameters = apply_parameters(parameters)
+
+            log_apply_starting(parameters)
+            log_apply_using_parameters(parameters)
+
+            apply_command.execute(parameters)
+
+            log_apply_complete
           end
 
           private
+
+          def log_apply_starting(parameters)
+            logger&.info(
+              'Applying for configuration in directory: ' \
+              "'#{parameters[:chdir]}'..."
+            )
+          end
+
+          def log_apply_using_parameters(parameters)
+            logger&.debug("Applying using parameters: #{parameters}...")
+          end
+
+          def log_apply_complete
+            logger&.info('Apply complete.')
+          end
 
           def apply_command
             instantiate_command(RubyTerraform::Commands::Apply)
@@ -28,16 +50,23 @@ module RSpec
           end
 
           def with_apply_standard_parameters(parameters)
-            parameters.merge(
-              chdir: parameters[:configuration_directory],
-              input: false,
-              auto_approve: true
-            )
+            configuration_directory = parameters[:configuration_directory]
+
+            parameters
+              .except(:configuration_directory)
+              .merge(
+                chdir: configuration_directory,
+                input: false,
+                auto_approve: true
+              )
           end
 
           def with_apply_state_file_parameters(parameters)
-            if parameters[:state_file]
-              return parameters.merge(state: parameters[:state_file])
+            state_file = parameters[:state_file]
+            if state_file
+              return parameters
+                       .except(:state_file)
+                       .merge(state: state_file)
             end
 
             parameters
