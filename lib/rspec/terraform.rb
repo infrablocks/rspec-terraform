@@ -16,6 +16,10 @@ require_relative 'terraform/logging'
 # * Before support in matchers
 # * Reference support in matchers
 # * Sensitive support in matchers
+# * `config` helper for doing config provider lookups
+# * Reference support to verify wiring between resources
+# * Some way to verify values across all matching resources
+# * Negated matcher descriptions
 #
 
 # rubocop:disable Metrics/BlockLength
