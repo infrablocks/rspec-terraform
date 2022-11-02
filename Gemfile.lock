@@ -30,7 +30,7 @@ GEM
       partialruby (~> 0.3)
       sexp_processor (~> 4.0)
     excon (0.93.0)
-    faker (2.23.0)
+    faker (3.0.0)
       i18n (>= 1.8.11, < 2)
     faraday (2.5.2)
       faraday-net_http (>= 2.0, < 3.1)
