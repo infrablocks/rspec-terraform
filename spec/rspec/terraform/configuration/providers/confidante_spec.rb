@@ -48,8 +48,8 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
       it 'passes all overrides to confidant as scope and overrides ' \
          'by default' do
         configuration = stub_confidante
-        scoped_configuration = double(::Confidante::Configuration)
-        overridden_configuration = double(::Confidante::Configuration)
+        scoped_configuration = double(Confidante::Configuration)
+        overridden_configuration = double(Confidante::Configuration)
 
         provider_overrides = {
           first_parameter: 'one',
@@ -86,8 +86,8 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
       # rubocop:disable RSpec/VerifiedDoubles
       it 'uses scope selector to select scope when provided' do
         configuration = stub_confidante
-        scoped_configuration = double(::Confidante::Configuration)
-        overridden_configuration = double(::Confidante::Configuration)
+        scoped_configuration = double(Confidante::Configuration)
+        overridden_configuration = double(Confidante::Configuration)
 
         provider_overrides = {
           first_parameter: 'one',
@@ -128,8 +128,8 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
       # rubocop:disable RSpec/VerifiedDoubles
       it 'uses overrides selector to select overrides when provided' do
         configuration = stub_confidante
-        scoped_configuration = double(::Confidante::Configuration)
-        overridden_configuration = double(::Confidante::Configuration)
+        scoped_configuration = double(Confidante::Configuration)
+        overridden_configuration = double(Confidante::Configuration)
 
         provider_overrides = {
           first_parameter: 'one',
@@ -276,8 +276,8 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
 
   # rubocop:disable RSpec/VerifiedDoubles
   def stub_confidante
-    configuration = double(::Confidante::Configuration)
-    allow(::Confidante)
+    configuration = double(Confidante::Configuration)
+    allow(Confidante)
       .to(receive(:configuration)
             .and_return(configuration))
     allow(configuration).to(receive(:for_scope).and_return(configuration))
