@@ -4,7 +4,7 @@ PATH
     rspec-terraform (0.5.0.pre.2)
       confidante (>= 0.27)
       rspec (>= 3.0)
-      ruby-terraform (= 1.7.0.pre.18)
+      ruby-terraform (= 1.7.0)
 
 GEM
   remote: https://rubygems.org/
@@ -152,7 +152,7 @@ GEM
     rubocop-rspec (2.16.0)
       rubocop (~> 1.33)
     ruby-progressbar (1.11.0)
-    ruby-terraform (1.7.0.pre.18)
+    ruby-terraform (1.7.0)
       immutable-struct (~> 2.4)
       lino (~> 3.0)
     ruby2_keywords (0.0.5)
