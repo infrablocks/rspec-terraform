@@ -97,7 +97,7 @@ namespace :secrets do
   task generate: %w[
     encryption:passphrase:generate
     keys:deploy:generate
-    keys:secret:generate
+    keys:secrets:generate
   ]
 
   desc 'Provision all secrets.'
