@@ -10,11 +10,10 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
         configuration = stub_confidante
 
         allow(configuration)
-          .to(receive(:vars)
-                .and_return(first: 1, second: 2))
-        allow(configuration)
-          .to(receive(:configuration_directory)
-                .and_return('path/to/configuration'))
+          .to(receive_messages(
+                vars: { first: 1, second: 2 },
+                configuration_directory: 'path/to/configuration'
+              ))
 
         provider = described_class.new(
           parameters: %i[vars configuration_directory]
@@ -31,8 +30,7 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
       it 'does not include parameters that have no value in confidante' do
         configuration = stub_confidante
 
-        allow(configuration).to(receive(:first).and_return(1))
-        allow(configuration).to(receive(:second).and_return(nil))
+        allow(configuration).to(receive_messages(first: 1, second: nil))
 
         provider = described_class.new(
           parameters: %i[first second]
@@ -171,8 +169,8 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
          'by default' do
         configuration = stub_confidante
 
-        allow(configuration).to(receive(:first_parameter).and_return(1))
-        allow(configuration).to(receive(:second_parameter).and_return(2))
+        allow(configuration).to(receive_messages(first_parameter: 1,
+                                                 second_parameter: 2))
 
         overrides = {
           second_parameter: 'two',
@@ -198,14 +196,13 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
         configuration = stub_confidante
 
         allow(configuration)
-          .to(receive(:vars)
-                .and_return(
+          .to(receive_messages(
+                vars: {
                   first_var: 1,
                   second_var: 2
-                ))
-        allow(configuration)
-          .to(receive(:var_files)
-                .and_return(%w[path/to/file1.tfvars path/to/file2.tfvars]))
+                },
+                var_files: %w[path/to/file1.tfvars path/to/file2.tfvars]
+              ))
 
         overrides = {
           vars: {
@@ -248,6 +245,7 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
         allow(configuration).to(receive(:fourth).and_return(4))
 
         merger = Object.new
+
         def merger.merge(left, right)
           left.merge(right.slice(:second))
         end
@@ -280,9 +278,10 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
     allow(Confidante)
       .to(receive(:configuration)
             .and_return(configuration))
-    allow(configuration).to(receive(:for_scope).and_return(configuration))
-    allow(configuration).to(receive(:for_overrides).and_return(configuration))
+    allow(configuration).to(receive_messages(for_scope: configuration,
+                                             for_overrides: configuration))
     configuration
   end
+
   # rubocop:enable RSpec/VerifiedDoubles
 end

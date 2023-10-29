@@ -3,7 +3,7 @@
 require 'confidante'
 require 'ruby_terraform'
 
-require_relative './base'
+require_relative 'base'
 require_relative '../merger'
 
 module RSpec

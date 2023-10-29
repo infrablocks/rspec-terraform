@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative './parameters'
+require_relative 'parameters'
 
 module RSpec
   module Terraform

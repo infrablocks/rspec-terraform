@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative './matchers/include_resource_change'
-require_relative './matchers/include_output_change'
+require_relative 'matchers/include_resource_change'
+require_relative 'matchers/include_output_change'
 
 module RSpec
   module Terraform

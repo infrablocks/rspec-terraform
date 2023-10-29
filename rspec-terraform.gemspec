@@ -49,6 +49,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'guard-rubocop'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rake_circle_ci'
+  spec.add_development_dependency 'rake_git'
+  spec.add_development_dependency 'rake_git_crypt'
   spec.add_development_dependency 'rake_github'
   spec.add_development_dependency 'rake_gpg'
   spec.add_development_dependency 'rake_ssh'

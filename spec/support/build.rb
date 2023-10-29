@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-require_relative './random'
+require_relative 'random'
 
 module Support
   # rubocop:disable Metrics/ModuleLength
   module Build
+    # rubocop:disable Metrics/ClassLength
     class << self
       def change_content_defaults_for_resource
         { actions: ['create'],
@@ -193,6 +194,7 @@ module Support
         "#{type}.#{name}#{index}"
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
   # rubocop:enable Metrics/ModuleLength
 end

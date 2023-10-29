@@ -2,7 +2,7 @@
 
 require 'ruby_terraform'
 
-require_relative './command_instantiation'
+require_relative 'command_instantiation'
 
 module RSpec
   module Terraform

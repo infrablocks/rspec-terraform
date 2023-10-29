@@ -3,7 +3,7 @@
 require 'ruby_terraform'
 require 'securerandom'
 
-require_relative './command_instantiation'
+require_relative 'command_instantiation'
 
 module RSpec
   module Terraform

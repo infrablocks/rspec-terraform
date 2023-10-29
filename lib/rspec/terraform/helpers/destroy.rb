@@ -2,8 +2,8 @@
 
 require 'ruby_terraform'
 
-require_relative './base'
-require_relative './actions'
+require_relative 'base'
+require_relative 'actions'
 
 module RSpec
   module Terraform
