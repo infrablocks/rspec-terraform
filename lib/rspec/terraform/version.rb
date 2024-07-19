@@ -2,6 +2,6 @@
 
 module RSpec
   module Terraform
-    VERSION = '0.5.0.pre.6'
+    VERSION = '0.5.0.pre.7'
   end
 end
