@@ -13,10 +13,10 @@ describe RSpec::Terraform::Helpers::Actions::Output do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Output
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.output(parameters)
@@ -32,12 +32,12 @@ describe RSpec::Terraform::Helpers::Actions::Output do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Output
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     state_file = 'path/to/state.tfstate'
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory,
-      state_file: state_file
+      configuration_directory:,
+      state_file:
     }
 
     instance.output(parameters)
@@ -57,10 +57,10 @@ describe RSpec::Terraform::Helpers::Actions::Output do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Output
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.output(parameters)

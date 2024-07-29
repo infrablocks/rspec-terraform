@@ -19,7 +19,7 @@ module RSpec
             log_show_using_parameters(parameters)
 
             stdout = StringIO.new
-            show_command(stdout: stdout)
+            show_command(stdout:)
               .execute(parameters)
 
             log_show_complete

@@ -8,7 +8,7 @@ module RSpec
           @vars = vars
         end
 
-        def method_missing(method, *args, &_)
+        def method_missing(method, *args, &)
           if method.to_s =~ /.*=$/
             set_var(method.to_s.chop.to_sym, args[0])
           else

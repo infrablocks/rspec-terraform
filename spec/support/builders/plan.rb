@@ -77,8 +77,8 @@ module Support
       def build
         RubyTerraform::Models::Plan.new(
           Support::Build.plan_content(
-            resource_changes: resource_changes,
-            output_changes: output_changes
+            resource_changes:,
+            output_changes:
           )
         )
       end

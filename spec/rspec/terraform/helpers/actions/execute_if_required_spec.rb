@@ -9,7 +9,7 @@ describe RSpec::Terraform::Helpers::Actions::ExecuteIfRequired do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::ExecuteIfRequired
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     parameters = {
       only_if: -> { false }
     }
@@ -30,7 +30,7 @@ describe RSpec::Terraform::Helpers::Actions::ExecuteIfRequired do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::ExecuteIfRequired
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     parameters = {
       only_if: -> { true }
     }
@@ -51,7 +51,7 @@ describe RSpec::Terraform::Helpers::Actions::ExecuteIfRequired do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::ExecuteIfRequired
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     parameters = {
       only_if: -> { false }
     }

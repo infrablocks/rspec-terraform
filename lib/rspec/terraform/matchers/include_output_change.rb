@@ -153,7 +153,7 @@ module RSpec
             actions = oc.change.actions.join(', ')
             value = oc.change.after_object
             value_object =
-              RubyTerraform::Models::Values.map({ value: value })
+              RubyTerraform::Models::Values.map({ value: })
             value_lines = value_object.render(level: 8, bare: true)
 
             "            - #{name} (#{actions})\n#{value_lines}"

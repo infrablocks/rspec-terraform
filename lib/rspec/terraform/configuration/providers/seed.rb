@@ -20,7 +20,7 @@ module RSpec
           end
 
           def resolve(overrides = {})
-            merger.merge({ seed: seed }, overrides)
+            merger.merge({ seed: }, overrides)
           end
 
           def reset

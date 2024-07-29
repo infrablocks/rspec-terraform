@@ -15,7 +15,7 @@ describe RSpec::Terraform::Helpers::Actions::Clean do
       klass = Class.new(RSpec::Terraform::Helpers::Base) do
         include RSpec::Terraform::Helpers::Actions::Clean
       end
-      instance = klass.new(logger: logger, execution_mode: :in_place)
+      instance = klass.new(logger:, execution_mode: :in_place)
       parameters = {
         configuration_directory: 'path/to/configuration'
       }
@@ -34,10 +34,10 @@ describe RSpec::Terraform::Helpers::Actions::Clean do
       klass = Class.new(RSpec::Terraform::Helpers::Base) do
         include RSpec::Terraform::Helpers::Actions::Clean
       end
-      instance = klass.new(logger: logger, execution_mode: :isolated)
+      instance = klass.new(logger:, execution_mode: :isolated)
       configuration_directory = 'path/to/configuration'
       parameters = {
-        configuration_directory: configuration_directory
+        configuration_directory:
       }
 
       allow(logger).to(receive(:info))
@@ -55,10 +55,10 @@ describe RSpec::Terraform::Helpers::Actions::Clean do
       klass = Class.new(RSpec::Terraform::Helpers::Base) do
         include RSpec::Terraform::Helpers::Actions::Clean
       end
-      instance = klass.new(logger: logger, execution_mode: :isolated)
+      instance = klass.new(logger:, execution_mode: :isolated)
       configuration_directory = 'path/to/configuration'
       parameters = {
-        configuration_directory: configuration_directory
+        configuration_directory:
       }
 
       allow(logger).to(receive(:info))

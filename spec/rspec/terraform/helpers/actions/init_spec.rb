@@ -13,10 +13,10 @@ describe RSpec::Terraform::Helpers::Actions::Init do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Init
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.init(parameters)
@@ -32,12 +32,12 @@ describe RSpec::Terraform::Helpers::Actions::Init do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Init
     end
-    instance = klass.new(logger: logger, execution_mode: :isolated)
+    instance = klass.new(logger:, execution_mode: :isolated)
     configuration_directory = 'path/to/destination'
     source_directory = 'path/to/source'
     parameters = {
-      configuration_directory: configuration_directory,
-      source_directory: source_directory
+      configuration_directory:,
+      source_directory:
     }
 
     instance.init(parameters)
@@ -58,10 +58,10 @@ describe RSpec::Terraform::Helpers::Actions::Init do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Init
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.init(parameters)

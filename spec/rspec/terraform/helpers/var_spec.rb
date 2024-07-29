@@ -45,7 +45,7 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        configuration_provider: configuration_provider
+        configuration_provider:
       )
       result = helper.execute
 
@@ -63,7 +63,7 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        configuration_provider: configuration_provider
+        configuration_provider:
       )
       result = helper.execute
 
@@ -91,7 +91,7 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        configuration_provider: configuration_provider
+        configuration_provider:
       )
       result = helper.execute(override_configuration)
 
@@ -152,7 +152,7 @@ describe RSpec::Terraform::Helpers::Var do
         )
 
       helper = described_class.new(
-        configuration_provider: configuration_provider
+        configuration_provider:
       )
       result = helper.execute do |vars|
         vars.second = 'two'

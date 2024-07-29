@@ -15,8 +15,8 @@ module RSpec
         include Actions::Init
         include Actions::Apply
 
-        def execute(overrides = {}, &block)
-          parameters = resolve_parameters(overrides, &block)
+        def execute(overrides = {}, &)
+          parameters = resolve_parameters(overrides, &)
 
           execute_if_required(:apply, parameters) do
             validate(parameters)

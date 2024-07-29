@@ -13,10 +13,10 @@ describe RSpec::Terraform::Helpers::Actions::Plan do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Plan
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.plan(parameters)
@@ -32,19 +32,19 @@ describe RSpec::Terraform::Helpers::Actions::Plan do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Plan
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     state_file = 'path/to/state.tfstate'
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory,
-      state_file: state_file
+      configuration_directory:,
+      state_file:
     }
 
     out = instance.plan(parameters)
 
     expected_parameters = {
       chdir: configuration_directory,
-      out: out,
+      out:,
       input: false,
       state: state_file
     }
@@ -59,10 +59,10 @@ describe RSpec::Terraform::Helpers::Actions::Plan do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Plan
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.plan(parameters)

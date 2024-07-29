@@ -498,10 +498,10 @@ describe RSpec::Terraform::Helpers::Apply do
     it 'inits using the specified logger' do
       logger = logger_double
 
-      init = stub_ruby_terraform_init(logger: logger)
+      init = stub_ruby_terraform_init(logger:)
       stub_ruby_terraform_apply
 
-      helper = described_class_instance(logger: logger)
+      helper = described_class_instance(logger:)
       helper.execute(required_parameters)
 
       expect(init)
@@ -512,9 +512,9 @@ describe RSpec::Terraform::Helpers::Apply do
       logger = logger_double
 
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply(logger: logger)
+      apply = stub_ruby_terraform_apply(logger:)
 
-      helper = described_class_instance(logger: logger)
+      helper = described_class_instance(logger:)
       helper.execute(required_parameters)
 
       expect(apply)
@@ -526,10 +526,10 @@ describe RSpec::Terraform::Helpers::Apply do
     it 'inits using the specified stdin' do
       stdin = StringIO.new
 
-      init = stub_ruby_terraform_init(stdin: stdin)
+      init = stub_ruby_terraform_init(stdin:)
       stub_ruby_terraform_apply
 
-      helper = described_class_instance(stdin: stdin)
+      helper = described_class_instance(stdin:)
       helper.execute(required_parameters)
 
       expect(init)
@@ -540,9 +540,9 @@ describe RSpec::Terraform::Helpers::Apply do
       stdin = StringIO.new
 
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply(stdin: stdin)
+      apply = stub_ruby_terraform_apply(stdin:)
 
-      helper = described_class_instance(stdin: stdin)
+      helper = described_class_instance(stdin:)
       helper.execute(required_parameters)
 
       expect(apply)
@@ -554,10 +554,10 @@ describe RSpec::Terraform::Helpers::Apply do
     it 'inits using the specified stdout' do
       stdout = StringIO.new
 
-      init = stub_ruby_terraform_init(stdout: stdout)
+      init = stub_ruby_terraform_init(stdout:)
       stub_ruby_terraform_apply
 
-      helper = described_class_instance(stdout: stdout)
+      helper = described_class_instance(stdout:)
       helper.execute(required_parameters)
 
       expect(init)
@@ -568,9 +568,9 @@ describe RSpec::Terraform::Helpers::Apply do
       stdout = StringIO.new
 
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply(stdout: stdout)
+      apply = stub_ruby_terraform_apply(stdout:)
 
-      helper = described_class_instance(stdout: stdout)
+      helper = described_class_instance(stdout:)
       helper.execute(required_parameters)
 
       expect(apply)
@@ -582,10 +582,10 @@ describe RSpec::Terraform::Helpers::Apply do
     it 'inits using the specified stderr' do
       stderr = StringIO.new
 
-      init = stub_ruby_terraform_init(stderr: stderr)
+      init = stub_ruby_terraform_init(stderr:)
       stub_ruby_terraform_apply
 
-      helper = described_class_instance(stderr: stderr)
+      helper = described_class_instance(stderr:)
       helper.execute(required_parameters)
 
       expect(init)
@@ -596,9 +596,9 @@ describe RSpec::Terraform::Helpers::Apply do
       stderr = StringIO.new
 
       stub_ruby_terraform_init
-      apply = stub_ruby_terraform_apply(stderr: stderr)
+      apply = stub_ruby_terraform_apply(stderr:)
 
-      helper = described_class_instance(stderr: stderr)
+      helper = described_class_instance(stderr:)
       helper.execute(required_parameters)
 
       expect(apply)
@@ -698,7 +698,7 @@ describe RSpec::Terraform::Helpers::Apply do
           )
 
         helper = described_class_instance(
-          configuration_provider: configuration_provider
+          configuration_provider:
         )
         helper.execute
 
@@ -725,7 +725,7 @@ describe RSpec::Terraform::Helpers::Apply do
           )
 
         helper = described_class_instance(
-          configuration_provider: configuration_provider
+          configuration_provider:
         )
         helper.execute(override_configuration)
 
@@ -748,7 +748,7 @@ describe RSpec::Terraform::Helpers::Apply do
           )
 
         helper = described_class_instance(
-          configuration_provider: configuration_provider
+          configuration_provider:
         )
         helper.execute
 
@@ -771,7 +771,7 @@ describe RSpec::Terraform::Helpers::Apply do
           )
 
         helper = described_class_instance(
-          configuration_provider: configuration_provider
+          configuration_provider:
         )
         helper.execute
 
@@ -797,7 +797,7 @@ describe RSpec::Terraform::Helpers::Apply do
           )
 
         helper = described_class_instance(
-          configuration_provider: configuration_provider
+          configuration_provider:
         )
         helper.execute
 
@@ -837,7 +837,7 @@ describe RSpec::Terraform::Helpers::Apply do
           )
 
         helper = described_class_instance(
-          configuration_provider: configuration_provider
+          configuration_provider:
         )
         helper.execute(override_configuration)
 
@@ -945,7 +945,7 @@ describe RSpec::Terraform::Helpers::Apply do
         )
 
       helper = described_class_instance(
-        configuration_provider: configuration_provider
+        configuration_provider:
       )
       helper.execute(required_parameters) do |vars|
         vars.second = 'two'

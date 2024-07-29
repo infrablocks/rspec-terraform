@@ -13,7 +13,7 @@ describe RSpec::Terraform::Helpers::Actions::Validate do
         %i[first second]
       end
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     parameters = {
       first: 'one',
       second: 'two'
@@ -36,7 +36,7 @@ describe RSpec::Terraform::Helpers::Actions::Validate do
         %i[first second]
       end
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     parameters = {
       first: 'one',
       second: 'two'
@@ -58,7 +58,7 @@ describe RSpec::Terraform::Helpers::Actions::Validate do
         %i[first second]
       end
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     parameters = {
       first: 'one',
       second: 'two'
@@ -80,7 +80,7 @@ describe RSpec::Terraform::Helpers::Actions::Validate do
         %i[first second third]
       end
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     parameters = {
       first: 'one',
       fourth: 'four'

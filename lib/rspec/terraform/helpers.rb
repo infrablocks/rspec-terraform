@@ -9,34 +9,34 @@ require_relative 'helpers/var'
 module RSpec
   module Terraform
     module Helpers
-      def apply(overrides = {}, &block)
+      def apply(overrides = {}, &)
         RSpec::Terraform::Helpers::Apply
           .new(helper_options)
-          .execute(overrides, &block)
+          .execute(overrides, &)
       end
 
-      def destroy(overrides = {}, &block)
+      def destroy(overrides = {}, &)
         RSpec::Terraform::Helpers::Destroy
           .new(helper_options)
-          .execute(overrides, &block)
+          .execute(overrides, &)
       end
 
-      def output(overrides = {}, &block)
+      def output(overrides = {}, &)
         RSpec::Terraform::Helpers::Output
           .new(helper_options)
-          .execute(overrides, &block)
+          .execute(overrides, &)
       end
 
-      def plan(overrides = {}, &block)
+      def plan(overrides = {}, &)
         RSpec::Terraform::Helpers::Plan
           .new(helper_options)
-          .execute(overrides, &block)
+          .execute(overrides, &)
       end
 
-      def var(overrides = {}, &block)
+      def var(overrides = {}, &)
         RSpec::Terraform::Helpers::Var
           .new(helper_options)
-          .execute(overrides, &block)
+          .execute(overrides, &)
       end
 
       private

@@ -252,7 +252,7 @@ describe RSpec::Terraform::Configuration::Providers::Confidante do
 
         provider = described_class.new(
           parameters: %i[fourth],
-          merger: merger
+          merger:
         )
         result = provider.resolve(overrides)
 

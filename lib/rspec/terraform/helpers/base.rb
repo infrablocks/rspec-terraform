@@ -41,11 +41,11 @@ module RSpec
 
         def command_options
           {
-            binary: binary,
-            logger: logger,
-            stdin: stdin,
-            stdout: stdout,
-            stderr: stderr
+            binary:,
+            logger:,
+            stdin:,
+            stdout:,
+            stderr:
           }
         end
       end

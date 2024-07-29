@@ -9,7 +9,7 @@ describe RSpec::Terraform::Logging do
     it 'uses the provided logger as the logger stream' do
       logger = instance_double(Logger)
 
-      streams = described_class.resolve_streams(logger: logger)
+      streams = described_class.resolve_streams(logger:)
 
       expect(streams[:logger]).to(eq(logger))
     end
@@ -20,7 +20,7 @@ describe RSpec::Terraform::Logging do
       stdout = StringIO.new
 
       streams = described_class.resolve_streams(
-        stdout: stdout,
+        stdout:,
         streams: [:standard]
       )
       logger = streams[:logger]
@@ -34,7 +34,7 @@ describe RSpec::Terraform::Logging do
       stdout = StringIO.new
 
       streams = described_class.resolve_streams(
-        stdout: stdout,
+        stdout:,
         streams: [:standard],
         level: Logger::DEBUG
       )
@@ -58,7 +58,7 @@ describe RSpec::Terraform::Logging do
         stdout = StringIO.new
 
         streams = described_class.resolve_streams(
-          stdout: stdout,
+          stdout:,
           streams: [:standard]
         )
         logger = streams[:logger]
@@ -75,7 +75,7 @@ describe RSpec::Terraform::Logging do
 
         described_class.resolve_streams(
           streams: [:standard],
-          file_path: file_path
+          file_path:
         )
 
         expect(FileUtils)
@@ -99,7 +99,7 @@ describe RSpec::Terraform::Logging do
 
         described_class.resolve_streams(
           streams: [:file],
-          file_path: file_path
+          file_path:
         )
 
         expect(FileUtils)
@@ -120,7 +120,7 @@ describe RSpec::Terraform::Logging do
 
         streams = described_class.resolve_streams(
           streams: [:file],
-          file_path: file_path
+          file_path:
         )
         logger = streams[:logger]
         logger.info('important log message')
@@ -144,8 +144,8 @@ describe RSpec::Terraform::Logging do
 
         streams = described_class.resolve_streams(
           streams: %i[file standard],
-          stdout: stdout,
-          file_path: file_path
+          stdout:,
+          file_path:
         )
         logger = streams[:logger]
         logger.info('important log message')
@@ -161,7 +161,7 @@ describe RSpec::Terraform::Logging do
     it 'uses the provided stdout as the stdout stream' do
       stdout = StringIO.new
 
-      streams = described_class.resolve_streams(stdout: stdout)
+      streams = described_class.resolve_streams(stdout:)
 
       expect(streams[:stdout]).to(eq(stdout))
     end
@@ -170,7 +170,7 @@ describe RSpec::Terraform::Logging do
       stdout = StringIO.new
 
       streams = described_class.resolve_streams(
-        stdout: stdout,
+        stdout:,
         streams: [:standard]
       )
       logger = streams[:logger]
@@ -211,7 +211,7 @@ describe RSpec::Terraform::Logging do
 
         streams = described_class.resolve_streams(
           streams: [:file],
-          file_path: file_path
+          file_path:
         )
         stdout = streams[:stdout]
         stdout.write('important log message')
@@ -235,7 +235,7 @@ describe RSpec::Terraform::Logging do
         expect do
           streams = described_class.resolve_streams(
             streams: %i[file standard],
-            file_path: file_path
+            file_path:
           )
           logger = streams[:logger]
           logger.info('important log message')
@@ -251,7 +251,7 @@ describe RSpec::Terraform::Logging do
     it 'uses the provided stderr as the stderr stream' do
       stderr = StringIO.new
 
-      streams = described_class.resolve_streams(stderr: stderr)
+      streams = described_class.resolve_streams(stderr:)
 
       expect(streams[:stderr]).to(eq(stderr))
     end
@@ -287,7 +287,7 @@ describe RSpec::Terraform::Logging do
 
         streams = described_class.resolve_streams(
           streams: [:file],
-          file_path: file_path
+          file_path:
         )
         stderr = streams[:stderr]
         stderr.write('important log message')
@@ -311,7 +311,7 @@ describe RSpec::Terraform::Logging do
         expect do
           streams = described_class.resolve_streams(
             streams: %i[file standard],
-            file_path: file_path
+            file_path:
           )
           stderr = streams[:stderr]
           stderr.write('important log message')

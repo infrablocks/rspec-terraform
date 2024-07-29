@@ -19,7 +19,7 @@ module RSpec
             log_output_starting(parameters)
             log_output_using_parameters(parameters)
 
-            output_command(stdout: stdout)
+            output_command(stdout:)
               .execute(parameters)
 
             log_output_complete

@@ -15,8 +15,8 @@ module RSpec
         include Actions::Init
         include Actions::Destroy
 
-        def execute(overrides = {}, &block)
-          parameters = resolve_parameters(overrides, &block)
+        def execute(overrides = {}, &)
+          parameters = resolve_parameters(overrides, &)
 
           execute_if_required(:destroy, parameters) do
             validate(parameters)

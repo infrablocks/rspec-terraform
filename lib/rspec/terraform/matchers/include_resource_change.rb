@@ -39,7 +39,7 @@ module RSpec
           path = [path] if path.is_a?(Symbol)
           path = RubyTerraform::Models::Path.new(path)
           value = maybe_box_value(value)
-          @attributes << { stage: stage, path: path, value: value }
+          @attributes << { stage:, path:, value: }
           self
         end
 

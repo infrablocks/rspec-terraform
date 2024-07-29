@@ -13,11 +13,11 @@ describe RSpec::Terraform::Helpers::Actions::Remove do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Remove
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     file_name = 'thing.tfplan'
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.remove(parameters, file_name)
@@ -33,11 +33,11 @@ describe RSpec::Terraform::Helpers::Actions::Remove do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Remove
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     file_name = 'thing.tfplan'
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.remove(parameters, file_name)

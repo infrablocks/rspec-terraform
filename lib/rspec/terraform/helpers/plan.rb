@@ -14,8 +14,8 @@ module RSpec
         include Actions::Show
         include Actions::Remove
 
-        def execute(overrides = {}, &block)
-          parameters = resolve_parameters(overrides, &block)
+        def execute(overrides = {}, &)
+          parameters = resolve_parameters(overrides, &)
 
           validate(parameters)
           clean(parameters)

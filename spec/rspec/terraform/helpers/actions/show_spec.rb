@@ -13,11 +13,11 @@ describe RSpec::Terraform::Helpers::Actions::Show do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Show
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     file_name = 'thing.tfplan'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.show(parameters, file_name)
@@ -33,11 +33,11 @@ describe RSpec::Terraform::Helpers::Actions::Show do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Show
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     file_name = 'thing.tfplan'
     configuration_directory = 'path/to/configuration'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.show(parameters, file_name)
@@ -59,11 +59,11 @@ describe RSpec::Terraform::Helpers::Actions::Show do
     klass = Class.new(RSpec::Terraform::Helpers::Base) do
       include RSpec::Terraform::Helpers::Actions::Show
     end
-    instance = klass.new(logger: logger)
+    instance = klass.new(logger:)
     configuration_directory = 'path/to/configuration'
     file_name = 'thing.tfplan'
     parameters = {
-      configuration_directory: configuration_directory
+      configuration_directory:
     }
 
     instance.show(parameters, file_name)

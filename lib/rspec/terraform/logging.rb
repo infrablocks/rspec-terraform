@@ -32,7 +32,7 @@ module RSpec
             )
           end
 
-          opts.merge(streams: streams, level: level)
+          opts.merge(streams:, level:)
         end
 
         def resolve_logger(logger, streams, devices, level)
@@ -42,7 +42,7 @@ module RSpec
           log_devices << devices[:file] if streams.include?(:file)
           log_devices << devices[:stdout] if streams.include?(:standard)
 
-          Logger.new(multi_io(log_devices), level: level)
+          Logger.new(multi_io(log_devices), level:)
         end
 
         def resolve_stdout(stdout, streams, devices)

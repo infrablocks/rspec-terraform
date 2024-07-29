@@ -80,7 +80,7 @@ describe RSpec::Terraform::Configuration::Providers::Seed do
           left.merge(right.slice(:second))
         end
 
-        provider = described_class.new(merger: merger)
+        provider = described_class.new(merger:)
         result = provider.resolve(overrides)
 
         expect(result)

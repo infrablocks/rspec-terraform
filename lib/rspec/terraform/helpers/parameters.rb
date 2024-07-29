@@ -6,9 +6,9 @@ module RSpec
   module Terraform
     module Helpers
       module Parameters
-        def resolve_parameters(overrides, &block)
+        def resolve_parameters(overrides, &)
           parameters = with_configuration_provider_parameters(overrides)
-          parameters = with_resolved_vars(parameters, &block)
+          parameters = with_resolved_vars(parameters, &)
           with_mandatory_parameters(parameters)
         end
 
