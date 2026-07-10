@@ -54,7 +54,7 @@ GEM
     ffi (1.17.1)
     ffi (1.17.1-arm64-darwin)
     ffi (1.17.1-x86_64-darwin)
-    ffi (1.17.1-x86_64-linux-gnu)
+    ffi (1.17.1-x86_64-linux)
     formatador (1.1.0)
     gem-release (2.2.4)
     getsource (0.2.2)
