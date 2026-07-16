@@ -29,11 +29,10 @@ describe RSpec::Terraform::Helpers::Output do
 
     output_value = { key: 'value' }
 
-    opts = nil
     allow(RubyTerraform::Commands::Output)
-      .to(receive(:new) { |o| opts = o }.and_return(output_command))
+      .to(receive(:new).and_return(output_command))
     allow(output_command)
-      .to(receive(:execute) { opts[:stdout].write(JSON.dump(output_value)) })
+      .to(receive(:execute).and_return(JSON.dump(output_value)))
 
     helper = described_class_instance
     plan = helper.execute(required_parameters)
@@ -938,13 +937,12 @@ describe RSpec::Terraform::Helpers::Output do
   def stub_ruby_terraform_output(opts = nil)
     output = instance_double(RubyTerraform::Commands::Output)
 
-    stdout = nil
-    expectation = receive(:new) { |o| stdout = o[:stdout] }
+    expectation = receive(:new)
     expectation = expectation.with(hash_including(opts)) if opts
     expectation = expectation.and_return(output)
     allow(RubyTerraform::Commands::Output).to(expectation)
 
-    allow(output).to(receive(:execute) { stdout&.write('{}') })
+    allow(output).to(receive(:execute).and_return('{}'))
 
     output
   end

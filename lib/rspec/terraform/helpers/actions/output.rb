@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'ruby_terraform'
-require 'stringio'
 
 require_relative 'command_instantiation'
 
@@ -13,18 +12,19 @@ module RSpec
           include CommandInstantiation
 
           def output(parameters)
-            stdout = StringIO.new
             parameters = output_parameters(parameters)
 
             log_output_starting(parameters)
             log_output_using_parameters(parameters)
 
-            output_command(stdout:)
-              .execute(parameters)
+            # ruby-terraform >= 1.8 captures stdout itself and returns the
+            # output value from execute; a stdout passed on construction is
+            # ignored for this command.
+            output_value = output_command.execute(parameters)
 
             log_output_complete
 
-            stdout.string
+            output_value
           end
 
           private
