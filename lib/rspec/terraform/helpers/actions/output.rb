@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'ruby_terraform'
-require 'stringio'
 
 require_relative 'command_instantiation'
 
@@ -13,18 +12,16 @@ module RSpec
           include CommandInstantiation
 
           def output(parameters)
-            stdout = StringIO.new
             parameters = output_parameters(parameters)
 
             log_output_starting(parameters)
             log_output_using_parameters(parameters)
 
-            output_command(stdout:)
-              .execute(parameters)
+            output_value = output_command.execute(parameters)
 
             log_output_complete
 
-            stdout.string
+            output_value
           end
 
           private
@@ -44,8 +41,8 @@ module RSpec
             logger&.info('Output complete.')
           end
 
-          def output_command(opts = {})
-            instantiate_command(RubyTerraform::Commands::Output, opts)
+          def output_command
+            instantiate_command(RubyTerraform::Commands::Output)
           end
 
           def output_parameters(parameters)
