@@ -17,9 +17,6 @@ module RSpec
             log_output_starting(parameters)
             log_output_using_parameters(parameters)
 
-            # ruby-terraform >= 1.8 captures stdout itself and returns the
-            # output value from execute; a stdout passed on construction is
-            # ignored for this command.
             output_value = output_command.execute(parameters)
 
             log_output_complete
@@ -44,8 +41,8 @@ module RSpec
             logger&.info('Output complete.')
           end
 
-          def output_command(opts = {})
-            instantiate_command(RubyTerraform::Commands::Output, opts)
+          def output_command
+            instantiate_command(RubyTerraform::Commands::Output)
           end
 
           def output_parameters(parameters)

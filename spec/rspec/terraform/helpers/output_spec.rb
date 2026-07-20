@@ -29,8 +29,6 @@ describe RSpec::Terraform::Helpers::Output do
 
     output_value = { key: 'value' }
 
-    allow(RubyTerraform::Commands::Output)
-      .to(receive(:new).and_return(output_command))
     allow(output_command)
       .to(receive(:execute).and_return(JSON.dump(output_value)))
 
@@ -270,6 +268,17 @@ describe RSpec::Terraform::Helpers::Output do
       it 'uses a stdin of nil' do
         stub_ruby_terraform_init
         output = stub_ruby_terraform_output(stdin: nil)
+
+        helper = described_class_instance
+        helper.execute(required_parameters)
+
+        expect(output)
+          .to(have_received(:execute))
+      end
+
+      it 'uses a stdout of nil' do
+        stub_ruby_terraform_init
+        output = stub_ruby_terraform_output(stdout: nil)
 
         helper = described_class_instance
         helper.execute(required_parameters)
@@ -639,6 +648,19 @@ describe RSpec::Terraform::Helpers::Output do
       helper.execute(required_parameters)
 
       expect(init)
+        .to(have_received(:execute))
+    end
+
+    it 'outputs using the specified stdout' do
+      stdout = StringIO.new
+
+      stub_ruby_terraform_init
+      output = stub_ruby_terraform_output(stdout:)
+
+      helper = described_class_instance(stdout:)
+      helper.execute(required_parameters)
+
+      expect(output)
         .to(have_received(:execute))
     end
   end
