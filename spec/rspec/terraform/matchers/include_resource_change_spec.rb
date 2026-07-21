@@ -2356,7 +2356,7 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
                         "\n              \"a\"," \
                         "\n              \"b\"," \
                         "\n              \"c\"" \
-                        "\n            ]") \
+                        "\n            ]")
               )
           end
 
@@ -2568,7 +2568,7 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
                         'applied of:' \
                         "\n            some_attribute = {" \
                         "\n              some_key = 123" \
-                        "\n            }") \
+                        "\n            }")
               )
           end
 
@@ -2784,7 +2784,7 @@ describe RSpec::Terraform::Matchers::IncludeResourceChange do
                         "\n                4," \
                         "\n                5" \
                         "\n              ]" \
-                        "\n            }") \
+                        "\n            }")
               )
           end
 

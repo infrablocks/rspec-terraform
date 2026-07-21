@@ -51,7 +51,7 @@ module RSpec
 
           def raise_missing_parameters(parameters)
             parameters = parameters.collect { |parameter| "`:#{parameter}`" }
-            if parameters.count == 1
+            if parameters.one?
               raise StandardError,
                     "Required parameter: #{parameters[0]} missing."
             else
