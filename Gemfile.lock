@@ -228,7 +228,7 @@ GEM
     shikashi (0.6.0)
       evalhook (>= 0.6.0)
       getsource (>= 0.1.0)
-    simplecov (1.0.2)
+    simplecov (1.0.3)
     sshkey (2.0.0)
     terminal-notifier-guard (1.7.0)
     thor (1.5.0)
